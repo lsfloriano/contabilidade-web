@@ -41,9 +41,14 @@ export default function Lancamentos() {
   async function aoSelecionarArquivo(evento) {
     const arquivo = evento.target.files[0];
     if (!arquivo) return;
-    const resultado = await uploadLancamentos(arquivo);
-    setResultadoUpload(resultado);
-    await carregarDados();
+    setErroForm(null);
+    try {
+      const resultado = await uploadLancamentos(arquivo);
+      setResultadoUpload(resultado);
+      await carregarDados();
+    } catch (erro) {
+      setErroForm(erro.message);
+    }
     evento.target.value = "";
   }
 
