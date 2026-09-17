@@ -56,3 +56,17 @@ class BPReport(BaseModel):
     total_ativo: float
     total_passivo_pl: float
     balanceado: bool
+
+
+class DREConta(BaseModel):
+    codigo: str
+    nome: str
+    valor: float
+
+
+class DREReport(BaseModel):
+    receitas: list[DREConta]
+    despesas: list[DREConta]
+    total_receitas: float
+    total_despesas: float
+    resultado_periodo: float

@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.relatorios import calcular_balancete, montar_bp
-from app.schemas import BalanceteRow, BPReport
+from app.relatorios import calcular_balancete, montar_bp, montar_dre
+from app.schemas import BalanceteRow, BPReport, DREReport
 
 router = APIRouter(prefix="/relatorios")
 
@@ -16,3 +16,8 @@ def obter_balancete(db: Session = Depends(get_db)):
 @router.get("/bp", response_model=BPReport)
 def obter_bp(db: Session = Depends(get_db)):
     return montar_bp(db)
+
+
+@router.get("/dre", response_model=DREReport)
+def obter_dre(db: Session = Depends(get_db)):
+    return montar_dre(db)

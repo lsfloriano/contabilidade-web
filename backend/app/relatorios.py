@@ -93,3 +93,22 @@ def montar_bp(db: Session) -> dict:
         "total_passivo_pl": total_passivo_pl,
         "balanceado": abs(total_ativo - total_passivo_pl) < 0.01,
     }
+
+
+def montar_dre(db: Session) -> dict:
+    balancete = calcular_balancete(db)
+    resultado_contas = [c for c in balancete if c["tipo"] == "resultado"]
+
+    receitas = [c for c in resultado_contas if c["grupo"] == "Receita"]
+    despesas = [c for c in resultado_contas if c["grupo"] == "Despesa"]
+
+    total_receitas = sum(c["saldo"] for c in receitas)
+    total_despesas = sum(c["saldo"] for c in despesas)
+
+    return {
+        "receitas": [{"codigo": c["codigo"], "nome": c["nome"], "valor": c["saldo"]} for c in receitas],
+        "despesas": [{"codigo": c["codigo"], "nome": c["nome"], "valor": c["saldo"]} for c in despesas],
+        "total_receitas": total_receitas,
+        "total_despesas": total_despesas,
+        "resultado_periodo": total_receitas - total_despesas,
+    }
