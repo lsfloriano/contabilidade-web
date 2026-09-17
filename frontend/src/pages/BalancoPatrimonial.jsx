@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getBP } from "../api";
+import GraficoBalanco from "../components/GraficoBalanco";
 
 function Coluna({ titulo, secoes, total }) {
   return (
@@ -50,6 +51,7 @@ export default function BalancoPatrimonial() {
           Atenção: Ativo ({bp.total_ativo.toFixed(2)}) não bate com Passivo + PL ({bp.total_passivo_pl.toFixed(2)}).
         </p>
       )}
+      <GraficoBalanco bp={bp} />
       <div style={{ display: "flex", gap: "32px" }}>
         <Coluna titulo="Ativo" secoes={bp.ativo} total={bp.total_ativo} />
         <Coluna titulo="Passivo + Patrimônio Líquido" secoes={bp.passivo_pl} total={bp.total_passivo_pl} />
