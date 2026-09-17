@@ -58,3 +58,38 @@ def calcular_balancete(db: Session) -> list[dict]:
             "saldo": saldo,
         })
     return resultado
+
+
+GRUPOS_ATIVO = ["Ativo Circulante", "Ativo Não Circulante"]
+GRUPOS_PASSIVO_PL = ["Passivo Circulante", "Passivo Não Circulante", "Patrimônio Líquido"]
+
+
+def _agrupar_secoes(contas: list[dict], grupos: list[str]) -> tuple[list[dict], float]:
+    secoes = []
+    total = 0.0
+    for grupo in grupos:
+        contas_grupo = [c for c in contas if c["grupo"] == grupo]
+        subtotal = sum(c["saldo"] for c in contas_grupo)
+        total += subtotal
+        secoes.append({
+            "grupo": grupo,
+            "contas": [{"codigo": c["codigo"], "nome": c["nome"], "saldo": c["saldo"]} for c in contas_grupo],
+            "subtotal": subtotal,
+        })
+    return secoes, total
+
+
+def montar_bp(db: Session) -> dict:
+    balancete = calcular_balancete(db)
+    patrimoniais = [c for c in balancete if c["tipo"] == "patrimonial"]
+
+    ativo_secoes, total_ativo = _agrupar_secoes(patrimoniais, GRUPOS_ATIVO)
+    passivo_pl_secoes, total_passivo_pl = _agrupar_secoes(patrimoniais, GRUPOS_PASSIVO_PL)
+
+    return {
+        "ativo": ativo_secoes,
+        "passivo_pl": passivo_pl_secoes,
+        "total_ativo": total_ativo,
+        "total_passivo_pl": total_passivo_pl,
+        "balanceado": abs(total_ativo - total_passivo_pl) < 0.01,
+    }
