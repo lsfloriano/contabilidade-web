@@ -26,3 +26,13 @@ class LancamentoOut(LancamentoCreate):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+
+
+class BalanceteRow(BaseModel):
+    codigo: str
+    nome: str
+    grupo: str
+    tipo: str
+    total_debito: float
+    total_credito: float
+    saldo: float
