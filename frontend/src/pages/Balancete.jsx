@@ -3,14 +3,18 @@ import { getBalancete } from "../api";
 
 export default function Balancete() {
   const [linhas, setLinhas] = useState([]);
+  const [erro, setErro] = useState(null);
 
   useEffect(() => {
-    getBalancete().then(setLinhas);
+    getBalancete()
+      .then(setLinhas)
+      .catch((e) => setErro(e.message));
   }, []);
 
   return (
     <section>
       <h2>Balancete</h2>
+      {erro && <p className="erro">{erro}</p>}
       <table>
         <thead>
           <tr>

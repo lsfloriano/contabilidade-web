@@ -1,7 +1,7 @@
 import pandas as pd
 from sqlalchemy.orm import Session
 
-from app.models import Lancamento, ContaContabil, Natureza
+from app.models import Lancamento, ContaContabil, Natureza, Grupo, TipoConta
 
 
 def _lancamentos_dataframe(db: Session) -> pd.DataFrame:
@@ -60,8 +60,8 @@ def calcular_balancete(db: Session) -> list[dict]:
     return resultado
 
 
-GRUPOS_ATIVO = ["Ativo Circulante", "Ativo Não Circulante"]
-GRUPOS_PASSIVO_PL = ["Passivo Circulante", "Passivo Não Circulante", "Patrimônio Líquido"]
+GRUPOS_ATIVO = [Grupo.ativo_circulante.value, Grupo.ativo_nao_circulante.value]
+GRUPOS_PASSIVO_PL = [Grupo.passivo_circulante.value, Grupo.passivo_nao_circulante.value, Grupo.patrimonio_liquido.value]
 
 
 def _agrupar_secoes(contas: list[dict], grupos: list[str]) -> tuple[list[dict], float]:
@@ -81,10 +81,24 @@ def _agrupar_secoes(contas: list[dict], grupos: list[str]) -> tuple[list[dict], 
 
 def montar_bp(db: Session) -> dict:
     balancete = calcular_balancete(db)
-    patrimoniais = [c for c in balancete if c["tipo"] == "patrimonial"]
+    patrimoniais = [c for c in balancete if c["tipo"] == TipoConta.patrimonial.value]
+    resultado = [c for c in balancete if c["tipo"] == TipoConta.resultado.value]
 
     ativo_secoes, total_ativo = _agrupar_secoes(patrimoniais, GRUPOS_ATIVO)
     passivo_pl_secoes, total_passivo_pl = _agrupar_secoes(patrimoniais, GRUPOS_PASSIVO_PL)
+
+    total_receitas = sum(c["saldo"] for c in resultado if c["grupo"] == Grupo.receita.value)
+    total_despesas = sum(c["saldo"] for c in resultado if c["grupo"] == Grupo.despesa.value)
+    resultado_periodo = total_receitas - total_despesas
+
+    patrimonio_liquido = next(s for s in passivo_pl_secoes if s["grupo"] == Grupo.patrimonio_liquido.value)
+    patrimonio_liquido["contas"].append({
+        "codigo": "RESULTADO",
+        "nome": "Resultado do Exercício (não realizado)",
+        "saldo": resultado_periodo,
+    })
+    patrimonio_liquido["subtotal"] += resultado_periodo
+    total_passivo_pl += resultado_periodo
 
     return {
         "ativo": ativo_secoes,
@@ -97,10 +111,10 @@ def montar_bp(db: Session) -> dict:
 
 def montar_dre(db: Session) -> dict:
     balancete = calcular_balancete(db)
-    resultado_contas = [c for c in balancete if c["tipo"] == "resultado"]
+    resultado_contas = [c for c in balancete if c["tipo"] == TipoConta.resultado.value]
 
-    receitas = [c for c in resultado_contas if c["grupo"] == "Receita"]
-    despesas = [c for c in resultado_contas if c["grupo"] == "Despesa"]
+    receitas = [c for c in resultado_contas if c["grupo"] == Grupo.receita.value]
+    despesas = [c for c in resultado_contas if c["grupo"] == Grupo.despesa.value]
 
     total_receitas = sum(c["saldo"] for c in receitas)
     total_despesas = sum(c["saldo"] for c in despesas)

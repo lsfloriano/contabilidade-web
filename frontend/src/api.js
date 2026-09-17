@@ -3,7 +3,11 @@ const API_BASE = "http://localhost:8000";
 async function handleResponse(resposta) {
   if (!resposta.ok) {
     const corpo = await resposta.json().catch(() => ({}));
-    throw new Error(corpo.detail || `Erro ${resposta.status}`);
+    const detalhe = corpo.detail;
+    const mensagem = Array.isArray(detalhe)
+      ? detalhe.map((erro) => `${(erro.loc || []).slice(1).join(".")}: ${erro.msg}`).join("; ")
+      : detalhe;
+    throw new Error(mensagem || `Erro ${resposta.status}`);
   }
   return resposta.json();
 }

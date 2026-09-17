@@ -31,11 +31,15 @@ function Coluna({ titulo, secoes, total }) {
 
 export default function BalancoPatrimonial() {
   const [bp, setBp] = useState(null);
+  const [erro, setErro] = useState(null);
 
   useEffect(() => {
-    getBP().then(setBp);
+    getBP()
+      .then(setBp)
+      .catch((e) => setErro(e.message));
   }, []);
 
+  if (erro) return <p className="erro">{erro}</p>;
   if (!bp) return <p>Carregando...</p>;
 
   return (

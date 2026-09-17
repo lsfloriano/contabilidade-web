@@ -23,7 +23,7 @@ export default function Lancamentos() {
   }
 
   useEffect(() => {
-    carregarDados();
+    carregarDados().catch((e) => setErroForm(e.message));
   }, []);
 
   async function aoSubmeter(evento) {

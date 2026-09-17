@@ -3,11 +3,15 @@ import { getDRE } from "../api";
 
 export default function DRE() {
   const [dre, setDre] = useState(null);
+  const [erro, setErro] = useState(null);
 
   useEffect(() => {
-    getDRE().then(setDre);
+    getDRE()
+      .then(setDre)
+      .catch((e) => setErro(e.message));
   }, []);
 
+  if (erro) return <p className="erro">{erro}</p>;
   if (!dre) return <p>Carregando...</p>;
 
   return (
