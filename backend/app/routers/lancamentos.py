@@ -34,7 +34,11 @@ def listar_lancamentos(db: Session = Depends(get_db)):
 @router.post("/lancamentos/upload", response_model=UploadResultado)
 async def upload_lancamentos(db: Session = Depends(get_db), arquivo: UploadFile = File(...)):
     conteudo = await arquivo.read()
-    df = pd.read_csv(io.BytesIO(conteudo))
+
+    try:
+        df = pd.read_csv(io.BytesIO(conteudo))
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Arquivo CSV inválido: {exc}")
 
     inseridos = 0
     erros: list[UploadErro] = []
@@ -46,14 +50,15 @@ async def upload_lancamentos(db: Session = Depends(get_db), arquivo: UploadFile 
             conta_debito = str(linha["conta_debito"]).strip()
             conta_credito = str(linha["conta_credito"]).strip()
             valor = float(linha["valor"])
+            data_lancamento = pd.to_datetime(linha["data"]).date()
             validar_lancamento(db, conta_debito, conta_credito, valor)
-        except (LancamentoInvalido, KeyError, ValueError) as exc:
+        except (LancamentoInvalido, KeyError, ValueError, TypeError) as exc:
             erros.append(UploadErro(linha=numero_linha, motivo=str(exc)))
             continue
 
         historico = linha.get("historico")
         db.add(Lancamento(
-            data=pd.to_datetime(linha["data"]).date(),
+            data=data_lancamento,
             conta_debito=conta_debito,
             conta_credito=conta_credito,
             valor=valor,
