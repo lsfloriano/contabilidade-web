@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getDRE } from "../api";
+import GraficoDRE from "../components/GraficoDRE";
 
 export default function DRE() {
   const [dre, setDre] = useState(null);
@@ -17,6 +18,8 @@ export default function DRE() {
   return (
     <section>
       <h2>Demonstração de Resultado do Exercício</h2>
+
+      <GraficoDRE dre={dre} />
 
       <h3>Receitas</h3>
       <table>
