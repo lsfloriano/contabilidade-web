@@ -47,6 +47,10 @@ th, td {
   color: #b91c1c;
 }
 
+.grafico-aviso {
+  color: #92400e;
+}
+
 .total-linha {
   font-weight: bold;
   border-top: 2px solid #333;
@@ -58,6 +62,7 @@ th, td {
   border-radius: 6px;
   padding: 16px;
   margin-top: 12px;
+  overflow-x: auto;
 }
 
 .grafico h3 {
@@ -81,10 +86,12 @@ th, td {
 
 .grafico-bp svg {
   max-width: 420px;
+  min-width: 420px;
 }
 
 .grafico-dre svg {
   max-width: 720px;
+  min-width: 720px;
 }
 
 .grafico-legenda {

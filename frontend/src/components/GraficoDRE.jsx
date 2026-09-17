@@ -116,7 +116,7 @@ export default function GraficoDRE({ dre }) {
         <p className="grafico-vazio">
           Sem dados para exibir. Lance ou importe lançamentos para ver o gráfico.
         </p>
-        {aviso && <p className="erro">{aviso}</p>}
+        {aviso && <p className="grafico-aviso">{aviso}</p>}
       </div>
     );
   }
@@ -235,7 +235,7 @@ export default function GraficoDRE({ dre }) {
           Reduz o resultado
         </li>
       </ul>
-      {aviso && <p className="erro">{aviso}</p>}
+      {aviso && <p className="grafico-aviso">{aviso}</p>}
     </div>
   );
 }

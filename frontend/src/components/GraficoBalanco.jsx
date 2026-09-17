@@ -10,7 +10,6 @@ const CENTROS = [140, 280];
 
 const SUPERFICIE = "#fcfcfb";
 const PALETA = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4"];
-const COR_NEUTRA = "#898781";
 const COR_EIXO = "#c3c2b7";
 const COR_TEXTO = "#0b0b0b";
 const COR_TEXTO_SEC = "#52514e";
@@ -25,7 +24,7 @@ function fmt(valor) {
 }
 
 function corDoSlot(indice) {
-  return PALETA[indice] || COR_NEUTRA;
+  return PALETA[indice];
 }
 
 function caminhoTopoArredondado(x, y, largura, altura, raio) {
@@ -102,7 +101,7 @@ export default function GraficoBalanco({ bp }) {
         <p className="grafico-vazio">
           Sem dados para exibir. Lance ou importe lançamentos para ver o gráfico.
         </p>
-        {aviso && <p className="erro">{aviso}</p>}
+        {aviso && <p className="grafico-aviso">{aviso}</p>}
       </div>
     );
   }
@@ -216,7 +215,7 @@ export default function GraficoBalanco({ bp }) {
           </li>
         ))}
       </ul>
-      {aviso && <p className="erro">{aviso}</p>}
+      {aviso && <p className="grafico-aviso">{aviso}</p>}
     </div>
   );
 }
