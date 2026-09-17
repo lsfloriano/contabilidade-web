@@ -70,3 +70,13 @@ class DREReport(BaseModel):
     total_receitas: float
     total_despesas: float
     resultado_periodo: float
+
+
+class UploadErro(BaseModel):
+    linha: int
+    motivo: str
+
+
+class UploadResultado(BaseModel):
+    inseridos: int
+    erros: list[UploadErro]
