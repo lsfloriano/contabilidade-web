@@ -65,10 +65,11 @@ export default function GraficoDRE({ dre }) {
     inicio: 0,
     fim: dre.total_receitas,
     valor: dre.total_receitas,
-    positivo: true,
+    positivo: dre.total_receitas >= 0,
   });
 
   let acumulado = dre.total_receitas;
+  const despesasNegativas = dre.despesas.filter((despesa) => despesa.valor < 0);
   dre.despesas
     .filter((despesa) => despesa.valor > 0)
     .forEach((despesa) => {
@@ -97,6 +98,17 @@ export default function GraficoDRE({ dre }) {
   const minV = Math.min(...valores);
   const amplitude = maxV - minV;
 
+  const aviso =
+    despesasNegativas.length > 0
+      ? `${despesasNegativas
+          .map((despesa) => `${despesa.nome} negativa (${fmt(despesa.valor)})`)
+          .join("; ")} ${
+          despesasNegativas.length > 1
+            ? "não podem ser representadas na cascata"
+            : "não pode ser representada na cascata"
+        }. O total acumulado após as despesas não corresponde ao resultado do período; use a tabela abaixo.`
+      : null;
+
   if (amplitude <= 0) {
     return (
       <div className="grafico grafico-dre">
@@ -104,6 +116,7 @@ export default function GraficoDRE({ dre }) {
         <p className="grafico-vazio">
           Sem dados para exibir. Lance ou importe lançamentos para ver o gráfico.
         </p>
+        {aviso && <p className="erro">{aviso}</p>}
       </div>
     );
   }
@@ -222,6 +235,7 @@ export default function GraficoDRE({ dre }) {
           Reduz o resultado
         </li>
       </ul>
+      {aviso && <p className="erro">{aviso}</p>}
     </div>
   );
 }

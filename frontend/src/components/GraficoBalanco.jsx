@@ -113,7 +113,9 @@ export default function GraficoBalanco({ bp }) {
     <div className="grafico grafico-bp">
       <h3>Ativo x Passivo + Patrimônio Líquido</h3>
       <p className="grafico-subtitulo">
-        Quando o balanço fecha, as duas barras têm exatamente a mesma altura.
+        {aviso
+          ? "Com uma seção negativa, as alturas das barras deixam de ser comparáveis."
+          : "Quando o balanço fecha, as duas barras têm exatamente a mesma altura."}
       </p>
       <svg
         viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
@@ -208,7 +210,9 @@ export default function GraficoBalanco({ bp }) {
               className="grafico-legenda-cor"
               style={{ background: secao.cor }}
             />
-            {secao.grupo} — {fmt(secao.subtotal)}
+            {secao.grupo} (
+            {secao.coluna === 0 ? "Ativo" : "Passivo + PL"}) —{" "}
+            {fmt(secao.subtotal)}
           </li>
         ))}
       </ul>
