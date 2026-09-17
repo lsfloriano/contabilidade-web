@@ -1,0 +1,19 @@
+data,conta_debito,conta_credito,valor,historico
+2026-09-01,1.1.02,2.3.01,50000,Integralizacao de capital social
+2026-09-02,1.2.01,1.1.02,8000,Compra de computadores e equipamentos a vista
+2026-09-03,1.1.04,2.1.01,15000,Compra de mercadorias a prazo - fornecedor ABC
+2026-09-05,1.1.03,3.1.01,12000,Venda de mercadorias a prazo - cliente XYZ
+2026-09-05,4.1.01,1.1.04,7000,Baixa de CMV referente a venda do dia 05/09
+2026-09-08,1.1.01,3.1.02,3500,Prestacao de servico de consultoria a vista
+2026-09-10,2.1.01,1.1.02,10000,Pagamento parcial ao fornecedor ABC
+2026-09-12,1.1.02,1.1.03,6000,Recebimento parcial do cliente XYZ
+2026-09-15,4.1.02,1.1.02,2200,Pagamento de aluguel agua e luz do escritorio
+2026-09-15,4.1.03,1.1.02,1500,Pagamento de comissoes de vendas e marketing
+2026-09-18,1.1.02,2.1.02,20000,Emprestimo bancario de capital de giro
+2026-09-20,1.1.04,1.1.01,4000,Compra de mercadorias a vista
+2026-09-22,1.1.01,3.1.01,5000,Venda de mercadorias a vista
+2026-09-22,4.1.01,1.1.04,3000,Baixa de CMV referente a venda do dia 22/09
+2026-09-25,4.1.05,2.1.04,1800,Apuracao de impostos sobre vendas do mes
+2026-09-28,4.1.02,2.1.03,9000,Provisionamento da folha de pagamento do mes
+2026-09-29,4.1.04,1.1.02,250,Juros do emprestimo de capital de giro
+2026-09-30,2.1.04,1.1.02,1800,Pagamento de impostos sobre vendas
