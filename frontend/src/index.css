@@ -51,3 +51,70 @@ th, td {
   font-weight: bold;
   border-top: 2px solid #333;
 }
+
+.grafico {
+  background: #fcfcfb;
+  border: 1px solid rgba(11, 11, 11, 0.1);
+  border-radius: 6px;
+  padding: 16px;
+  margin-top: 12px;
+}
+
+.grafico h3 {
+  margin: 0;
+  font-size: 15px;
+  color: #0b0b0b;
+}
+
+.grafico-subtitulo {
+  margin: 4px 0 12px;
+  font-size: 12px;
+  color: #52514e;
+}
+
+.grafico svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+.grafico-bp svg {
+  max-width: 420px;
+}
+
+.grafico-dre svg {
+  max-width: 720px;
+}
+
+.grafico-legenda {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 12px 0 0;
+  padding: 0;
+  font-size: 12px;
+  color: #52514e;
+}
+
+.grafico-legenda li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.grafico-legenda-cor {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex: none;
+}
+
+.grafico-vazio {
+  margin: 0;
+  padding: 24px 0;
+  text-align: center;
+  font-size: 13px;
+  color: #898781;
+}
