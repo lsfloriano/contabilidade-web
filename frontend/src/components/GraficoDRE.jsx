@@ -1,3 +1,15 @@
+import {
+  BAR_W,
+  RAIO,
+  COR_EIXO,
+  COR_TEXTO,
+  COR_TEXTO_SEC,
+  COR_TEXTO_MUDO,
+  fmt,
+  MENSAGEM_VAZIO,
+  caminhoBarra,
+} from "./graficos-comuns";
+
 const VIEW_W = 720;
 const VIEW_H = 430;
 const PAD_LEFT = 32;
@@ -7,55 +19,16 @@ const PAD_BOTTOM = 122;
 const PLOT_W = VIEW_W - PAD_LEFT - PAD_RIGHT; // 672
 const PLOT_H = VIEW_H - PAD_TOP - PAD_BOTTOM; // 280
 const EIXO_X_Y = PAD_TOP + PLOT_H + 30; // 338
-const BAR_W = 24;
-const RAIO = 4;
 const LIMITE_ROTULO = 26;
 
 const COR_POSITIVO = "#2a78d6";
 const COR_NEGATIVO = "#e34948";
-const COR_EIXO = "#c3c2b7";
 const COR_CONECTOR = "#e1e0d9";
-const COR_TEXTO = "#0b0b0b";
-const COR_TEXTO_SEC = "#52514e";
-const COR_TEXTO_MUDO = "#898781";
-
-const formatador = new Intl.NumberFormat("pt-BR", {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-
-function fmt(valor) {
-  return formatador.format(valor);
-}
 
 function encurtar(texto) {
   return texto.length > LIMITE_ROTULO
     ? `${texto.slice(0, LIMITE_ROTULO - 1)}…`
     : texto;
-}
-
-function caminhoBarra(x, y, largura, altura, raio, arredondarTopo) {
-  const r = Math.min(raio, altura, largura / 2);
-  if (arredondarTopo) {
-    return [
-      `M ${x} ${y + altura}`,
-      `L ${x} ${y + r}`,
-      `Q ${x} ${y} ${x + r} ${y}`,
-      `L ${x + largura - r} ${y}`,
-      `Q ${x + largura} ${y} ${x + largura} ${y + r}`,
-      `L ${x + largura} ${y + altura}`,
-      "Z",
-    ].join(" ");
-  }
-  return [
-    `M ${x} ${y}`,
-    `L ${x} ${y + altura - r}`,
-    `Q ${x} ${y + altura} ${x + r} ${y + altura}`,
-    `L ${x + largura - r} ${y + altura}`,
-    `Q ${x + largura} ${y + altura} ${x + largura} ${y + altura - r}`,
-    `L ${x + largura} ${y}`,
-    "Z",
-  ].join(" ");
 }
 
 export default function GraficoDRE({ dre }) {
@@ -113,9 +86,7 @@ export default function GraficoDRE({ dre }) {
     return (
       <div className="grafico grafico-dre">
         <h3>Cascata do resultado</h3>
-        <p className="grafico-vazio">
-          Sem dados para exibir. Lance ou importe lançamentos para ver o gráfico.
-        </p>
+        <p className="grafico-vazio">{MENSAGEM_VAZIO}</p>
         {aviso && <p className="grafico-aviso">{aviso}</p>}
       </div>
     );

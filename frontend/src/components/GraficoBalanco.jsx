@@ -1,43 +1,27 @@
+import {
+  BAR_W,
+  RAIO,
+  COR_EIXO,
+  COR_TEXTO,
+  COR_TEXTO_SEC,
+  fmt,
+  MENSAGEM_VAZIO,
+  caminhoBarra,
+} from "./graficos-comuns";
+
 const VIEW_W = 420;
 const VIEW_H = 300;
 const PAD_TOP = 32;
 const BASELINE_Y = 252;
 const PLOT_H = BASELINE_Y - PAD_TOP; // 220
-const BAR_W = 24;
 const VAO = 2;
-const RAIO = 4;
 const CENTROS = [140, 280];
 
 const SUPERFICIE = "#fcfcfb";
 const PALETA = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4"];
-const COR_EIXO = "#c3c2b7";
-const COR_TEXTO = "#0b0b0b";
-const COR_TEXTO_SEC = "#52514e";
-
-const formatador = new Intl.NumberFormat("pt-BR", {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-
-function fmt(valor) {
-  return formatador.format(valor);
-}
 
 function corDoSlot(indice) {
   return PALETA[indice];
-}
-
-function caminhoTopoArredondado(x, y, largura, altura, raio) {
-  const r = Math.min(raio, altura, largura / 2);
-  return [
-    `M ${x} ${y + altura}`,
-    `L ${x} ${y + r}`,
-    `Q ${x} ${y} ${x + r} ${y}`,
-    `L ${x + largura - r} ${y}`,
-    `Q ${x + largura} ${y} ${x + largura} ${y + r}`,
-    `L ${x + largura} ${y + altura}`,
-    "Z",
-  ].join(" ");
 }
 
 export default function GraficoBalanco({ bp }) {
@@ -98,9 +82,7 @@ export default function GraficoBalanco({ bp }) {
     return (
       <div className="grafico grafico-bp">
         <h3>Ativo x Passivo + Patrimônio Líquido</h3>
-        <p className="grafico-vazio">
-          Sem dados para exibir. Lance ou importe lançamentos para ver o gráfico.
-        </p>
+        <p className="grafico-vazio">{MENSAGEM_VAZIO}</p>
         {aviso && <p className="grafico-aviso">{aviso}</p>}
       </div>
     );
@@ -151,7 +133,7 @@ export default function GraficoBalanco({ bp }) {
                 peca.topo ? (
                   <path
                     key={peca.segmento.grupo}
-                    d={caminhoTopoArredondado(x, peca.y, BAR_W, peca.altura, RAIO)}
+                    d={caminhoBarra(x, peca.y, BAR_W, peca.altura, RAIO, true)}
                     fill={peca.segmento.cor}
                   >
                     <title>{`${peca.segmento.grupo}: ${fmt(peca.segmento.subtotal)}`}</title>
