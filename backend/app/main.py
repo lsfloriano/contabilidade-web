@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.db import engine, init_db, SessionLocal
 from app.seed import seed_plano_de_contas
-from app.routers import contas
+from app.routers import contas, lancamentos
 
 
 @asynccontextmanager
@@ -35,3 +35,4 @@ def health():
 
 
 app.include_router(contas.router)
+app.include_router(lancamentos.router)
