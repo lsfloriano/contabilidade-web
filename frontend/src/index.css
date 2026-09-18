@@ -1,28 +1,64 @@
+/* Vocabulário visual único do app: paleta de 6 tokens, tipografia e o sistema de
+   pautas — fio de cabelo entre linhas, fio simples sobre subtotal, fio duplo sob
+   o total final. O dispositivo estrutural é o fio, não a caixa: nenhuma tabela é
+   envolvida em cartão.
+
+   Tipografia segue na pilha de sistema nesta rodada; uma serifada
+   auto-hospedada para o corpo do relatório foi considerada e deliberadamente
+   adiada. Não re-adicionar.
+
+   Tema claro apenas — nenhuma regra prefers-color-scheme, de propósito. */
+
+:root {
+  --papel: #fcfcfb;
+  --tinta: #1a2233;
+  --tinta-fraca: #5a6472;
+  --pauta: #c8cdd6;
+  --pauta-fraca: #e3e6eb;
+  --vermelho: #a4243b;
+}
+
 body {
   font-family: system-ui, sans-serif;
   margin: 0;
-  background: #f5f5f5;
+  background: var(--papel);
+  color: var(--tinta);
 }
+
+/* ---- navegação ----
+   Papel, não laje: a aba ativa é marcada por um fio de tinta embaixo, e por mais
+   nada. Sem fundo, sem caixa, sem canto arredondado — o mesmo dispositivo das
+   tabelas. */
 
 .tabs {
   display: flex;
   gap: 4px;
-  background: #1f2937;
-  padding: 8px;
+  background: var(--papel);
+  border-bottom: 1px solid var(--pauta);
+  /* 12px à esquerda, não 24: o .tab tem 12px de padding próprio, então o
+     *texto* da primeira aba cai em 24px e alinha com o texto do main. Alinhar
+     as caixas deixaria os rótulos 12px fora de prumo com o título abaixo. */
+  padding: 8px 24px 0 12px;
+  max-width: 948px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .tab {
   background: transparent;
-  color: white;
+  color: var(--tinta-fraca);
+  font: inherit;
   border: none;
-  padding: 8px 16px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  padding: 8px 12px;
   cursor: pointer;
-  border-radius: 4px;
 }
 
 .tab-ativa {
-  background: #374151;
-  font-weight: bold;
+  color: var(--tinta);
+  border-bottom-color: var(--tinta);
+  font-weight: 600;
 }
 
 main {
@@ -31,51 +67,219 @@ main {
   margin: 0 auto;
 }
 
+h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 16px;
+}
+
+h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 24px 0 4px;
+}
+
+h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tinta-fraca);
+  margin: 16px 0 4px;
+}
+
+/* ---- o sistema de pautas ----
+   Toda tabela do app é um razão; por isso o estilo é por elemento e nenhuma
+   página precisa de classe na tag <table>. Larguras de borda escolhidas para
+   resolver a colapsagem sem ambiguidade: na colapsagem a borda mais larga
+   vence, então 2px (subtotal) > 1px (fio de cabelo). O 3px double do total
+   final não participa dessa colapsagem — é o mínimo em que `double` renderiza
+   como linha/vão/linha em vez de colapsar visualmente num traço só. */
+
 table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 12px;
 }
 
-th, td {
+th,
+td {
   text-align: left;
   padding: 6px 10px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--pauta);
 }
+
+thead th {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tinta-fraca);
+  border-bottom: 1px solid var(--tinta);
+}
+
+/* Dinheiro: à direita, algarismos tabulares para as colunas alinharem
+   verticalmente entre linhas. Vale para <th> e <td>. */
+.razao-valor {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.valor-negativo {
+  color: var(--vermelho);
+}
+
+/* Fio simples acima: é um subtotal. */
+.razao-subtotal > td {
+  font-weight: 600;
+  border-top: 2px solid var(--tinta);
+}
+
+/* Total final fora de tabela: fio simples acima, fio duplo abaixo. */
+.razao-fechamento {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 16px 0 0;
+  padding: 6px 10px;
+  font-weight: 700;
+  border-top: 2px solid var(--tinta);
+  border-bottom: 3px double var(--tinta);
+}
+
+.tabela-rolagem {
+  overflow-x: auto;
+}
+
+/* ---- formulário ---- */
+
+.form-lancamento {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 20px;
+  align-items: end;
+  margin-top: 16px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.campo-rotulo {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tinta-fraca);
+}
+
+.campo input,
+.campo select {
+  font: inherit;
+  color: var(--tinta);
+  background: var(--papel);
+  border: 1px solid var(--pauta);
+  border-radius: 2px;
+  padding: 6px 8px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.campo input[type="number"] {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.campo input:focus,
+.campo select:focus {
+  outline: 2px solid var(--tinta);
+  outline-offset: 1px;
+}
+
+input[type="file"] {
+  font: inherit;
+  color: var(--tinta-fraca);
+}
+
+.botao {
+  font: inherit;
+  color: var(--tinta);
+  background: var(--papel);
+  border: 1px solid var(--tinta);
+  border-radius: 2px;
+  padding: 7px 18px;
+  cursor: pointer;
+}
+
+.botao:hover {
+  color: var(--papel);
+  background: var(--tinta);
+}
+
+.form-lancamento .botao {
+  justify-self: start;
+}
+
+/* ---- conta T do Balanço Patrimonial ----
+   A ousadia é gasta em um lugar só: este fio vertical. */
+
+.bp-colunas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 16px;
+}
+
+.bp-coluna {
+  min-width: 0;
+}
+
+.bp-coluna:first-child {
+  padding-right: 28px;
+}
+
+.bp-coluna:last-child {
+  padding-left: 28px;
+  border-left: 2px solid var(--tinta);
+}
+
+/* ---- recusas ---- */
 
 .erro {
-  color: #b91c1c;
+  color: var(--vermelho);
 }
 
+/* Âmbar validado para contraste (≈6,8:1 sobre --papel); fora de escopo desta
+   revisão, fica literal de propósito. */
 .grafico-aviso,
 .analise-nao-significativo {
   color: #92400e;
 }
 
-.total-linha {
-  font-weight: bold;
-  border-top: 2px solid #333;
-}
+/* ---- gráficos ---- */
 
+/* Sem cartão: um fio acima, como divisor de seção, na mesma pauta das tabelas.
+   O fundo sai porque o body já é --papel, que é a cor de que o SUPERFICIE do
+   GraficoBalanco depende para pintar os vãos entre segmentos.
+   REVERSÍVEL: para devolver a caixa, troque as três primeiras declarações
+   (`border-top`, `padding`, `margin-top`) por `background: var(--papel);
+   border: 1px solid var(--pauta); border-radius: 6px; padding: 16px;
+   margin-top: 12px;`, mantendo o `overflow-x: auto`. */
 .grafico {
-  background: #fcfcfb;
-  border: 1px solid rgba(11, 11, 11, 0.1);
-  border-radius: 6px;
-  padding: 16px;
-  margin-top: 12px;
+  border-top: 1px solid var(--pauta);
+  padding: 16px 0 0;
+  margin-top: 24px;
   overflow-x: auto;
 }
 
 .grafico h3 {
   margin: 0;
   font-size: 15px;
-  color: #0b0b0b;
+  color: var(--tinta);
 }
 
 .grafico-subtitulo {
   margin: 4px 0 12px;
   font-size: 12px;
-  color: #52514e;
+  color: var(--tinta-fraca);
 }
 
 .grafico svg {
@@ -103,7 +307,8 @@ th, td {
   margin: 12px 0 0;
   padding: 0;
   font-size: 12px;
-  color: #52514e;
+  color: var(--tinta-fraca);
+  font-variant-numeric: tabular-nums;
 }
 
 .grafico-legenda li {
@@ -124,12 +329,14 @@ th, td {
   padding: 24px 0;
   text-align: center;
   font-size: 13px;
-  color: #898781;
+  color: var(--tinta-fraca);
 }
+
+/* ---- Análise ---- */
 
 .analise-intro {
   font-size: 13px;
-  color: #52514e;
+  color: var(--tinta-fraca);
   max-width: 60ch;
 }
 
@@ -152,33 +359,33 @@ th, td {
 
 .analise-formula {
   font-size: 12px;
-  color: #52514e;
+  color: var(--tinta-fraca);
   margin-top: 2px;
 }
 
+/* Sem face monoespaçada: algarismos tabulares na face proporcional alinham os
+   números sem o tell do monoespaçado em rótulo pequeno de dado. */
 .analise-substituicao {
-  font-family: ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
   font-size: 12px;
-  color: #52514e;
+  color: var(--tinta-fraca);
+  font-variant-numeric: tabular-nums;
   margin-top: 2px;
 }
 
 .analise-direcao {
   font-size: 12px;
-  color: #898781;
+  color: var(--tinta-fraca);
   margin-top: 2px;
 }
 
 .analise-observacao {
   font-size: 12px;
-  color: #898781;
+  color: var(--tinta-fraca);
   margin-top: 4px;
   max-width: 52ch;
 }
 
 .analise-valor {
-  text-align: right;
-  white-space: nowrap;
   font-size: 18px;
   width: 40%;
 }
@@ -186,10 +393,49 @@ th, td {
 .analise-motivo {
   font-size: 12px;
   font-weight: normal;
-  color: #52514e;
+  color: var(--tinta-fraca);
   text-align: right;
   white-space: normal;
   margin-top: 4px;
+}
+
+/* ---- telas estreitas ---- */
+
+@media (max-width: 720px) {
+  main {
+    padding: 16px;
+  }
+
+  .tabs {
+    padding: 8px 16px 0 4px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .form-lancamento {
+    grid-template-columns: 1fr;
+  }
+
+  .bp-colunas {
+    grid-template-columns: 1fr;
+  }
+
+  .bp-coluna:first-child {
+    padding-right: 0;
+  }
+
+  /* Empilhado, o fio da conta T não pode ser 2px de tinta: essa é exatamente a
+     regra de subtotal, e o leitor acabou de aprendê-la quatro vezes descendo a
+     página. Vira divisor de seção (1px de pauta, o mesmo dispositivo de
+     .grafico) e o espaçamento inverte, para o fio se ligar ao título que
+     apresenta em vez do total que acabou de fechar. */
+  .bp-coluna:last-child {
+    padding-left: 0;
+    padding-top: 8px;
+    margin-top: 40px;
+    border-left: none;
+    border-top: 1px solid var(--pauta);
+  }
 }
 
 .sr-only {

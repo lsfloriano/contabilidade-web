@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { getBP } from "../api";
 import GraficoBalanco from "../components/GraficoBalanco";
+import { fmt, classeValor } from "../components/graficos-comuns";
 
 function Coluna({ titulo, secoes, total }) {
   return (
-    <div>
+    <div className="bp-coluna">
       <h3>{titulo}</h3>
       {secoes.map((secao) => (
         <div key={secao.grupo}>
@@ -14,18 +15,25 @@ function Coluna({ titulo, secoes, total }) {
               {secao.contas.map((conta) => (
                 <tr key={conta.codigo}>
                   <td>{conta.nome}</td>
-                  <td>{conta.saldo.toFixed(2)}</td>
+                  <td className={classeValor(conta.saldo)}>
+                    {fmt(conta.saldo)}
+                  </td>
                 </tr>
               ))}
-              <tr className="total-linha">
+              <tr className="razao-subtotal">
                 <td>Subtotal</td>
-                <td>{secao.subtotal.toFixed(2)}</td>
+                <td className={classeValor(secao.subtotal)}>
+                  {fmt(secao.subtotal)}
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
       ))}
-      <p className="total-linha">Total: {total.toFixed(2)}</p>
+      <p className="razao-fechamento">
+        <span>Total</span>
+        <span className={classeValor(total)}>{fmt(total)}</span>
+      </p>
     </div>
   );
 }
@@ -48,13 +56,18 @@ export default function BalancoPatrimonial() {
       <h2>Balanço Patrimonial</h2>
       {!bp.balanceado && (
         <p className="erro">
-          Atenção: Ativo ({bp.total_ativo.toFixed(2)}) não bate com Passivo + PL ({bp.total_passivo_pl.toFixed(2)}).
+          Atenção: Ativo ({fmt(bp.total_ativo)}) não bate com Passivo + PL (
+          {fmt(bp.total_passivo_pl)}).
         </p>
       )}
       <GraficoBalanco bp={bp} />
-      <div style={{ display: "flex", gap: "32px" }}>
+      <div className="bp-colunas">
         <Coluna titulo="Ativo" secoes={bp.ativo} total={bp.total_ativo} />
-        <Coluna titulo="Passivo + Patrimônio Líquido" secoes={bp.passivo_pl} total={bp.total_passivo_pl} />
+        <Coluna
+          titulo="Passivo + Patrimônio Líquido"
+          secoes={bp.passivo_pl}
+          total={bp.total_passivo_pl}
+        />
       </div>
     </section>
   );
