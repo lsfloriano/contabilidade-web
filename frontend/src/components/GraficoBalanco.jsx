@@ -17,6 +17,8 @@ const PLOT_H = BASELINE_Y - PAD_TOP; // 220
 const VAO = 2;
 const CENTROS = [140, 280];
 
+// Tem de acompanhar --papel em index.css: é a cor por trás dos vãos entre
+// segmentos empilhados, e uma divergência aparece como faixas claras entre eles.
 const SUPERFICIE = "#fcfcfb";
 const PALETA = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4"];
 
