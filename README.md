@@ -1,8 +1,8 @@
 # Contabilidade Web
 
 Aplicação de portfólio que replica o ciclo contábil básico (lançamento →
-balancete → Balanço Patrimonial e DRE) com FastAPI + pandas no backend
-e React no frontend.
+balancete → Balanço Patrimonial e DRE → Análise por indicadores) com
+FastAPI + pandas no backend e React no frontend.
 
 ## Rodando o backend
 
@@ -33,9 +33,17 @@ O app sobe em http://localhost:5173.
 - [ ] Aba Balancete: saldo da conta lançada bate com o valor informado
 - [ ] Aba Balanço Patrimonial: Ativo fecha com Passivo + PL (sem aviso
       de desbalanceamento)
-  - **Nota:** Este projeto implementa um período único contínuo, sem fechamento de exercício. Portanto, após lançar qualquer receita ou despesa, o resultado não é automaticamente transferido para Patrimônio Líquido. Assim, o check "Ativo bate com Passivo + PL" mostrará desbalanceamento, o que é o comportamento correto esperado nesta versão 1.
+  - **Nota:** Este projeto implementa um período único contínuo, sem
+    fechamento de exercício. O resultado do período é somado ao
+    Patrimônio Líquido automaticamente (mesmo critério em `montar_bp` e
+    em `montar_analise`), então o check "Ativo bate com Passivo + PL"
+    deve fechar sem aviso de desbalanceamento.
 - [ ] Aba DRE: lançar uma receita e uma despesa, conferir que o
       resultado do período é receita - despesa
+- [ ] Aba Análise: os 11 indicadores financeiros aparecem agrupados em
+      Liquidez, Estrutura de Capital e Rentabilidade, cada um com
+      fórmula, valores substituídos, direção de leitura e, quando
+      houver, a ressalva metodológica (`observacao`)
 
 ## Fixtures de lançamentos
 

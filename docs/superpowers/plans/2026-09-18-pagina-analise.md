@@ -79,9 +79,14 @@ Liquidez Corrente          2,11
    Zero e negativo são casos **separados, com mensagens separadas**: zero dá
    `valor = null` + motivo e `nao_significativo = false`; negativo dá
    `valor = null` + motivo e `nao_significativo = true`.
-3. **Giro do Ativo classicamente usa o ativo total *médio* de dois períodos.**
-   Este app tem um único período contínuo e usa o saldo final. Isso é rotulado
-   no próprio indicador (campo `observacao`), não escondido.
+3. **Giro do Ativo, ROA e ROE classicamente usam médias de dois períodos —
+   ativo médio para Giro e ROA, PL médio (ou inicial) para ROE.** Este app tem
+   um único período contínuo e usa os saldos finais. Além disso, o PL usado no
+   ROE já inclui o resultado do período (regra do item acima), então o
+   numerador do ROE está contido no seu próprio denominador — a fórmula
+   clássica usa PL inicial ou médio justamente para evitar essa sobreposição.
+   Nada disso é escondido: cada um dos três indicadores rotula sua própria
+   ressalva no campo `observacao`.
 
 ## Explicitamente rejeitado — não adicione
 
@@ -112,6 +117,14 @@ Códigos de conta fixos (de `backend/app/seed.py`): Caixa `1.1.01`, Bancos
 de grupo do balancete; **PL inclui o resultado do período**, igual ao que
 `montar_bp` faz. Receita e Resultado vêm de `montar_dre`
 (`total_receitas` e `resultado_periodo`).
+
+**"Receita" nesta tabela é sempre a receita bruta** (`total_receitas` de
+`montar_dre`), não a receita líquida de vendas que os livros-texto usam nas
+margens. Esta aplicação não tem uma seção de deduções na DRE (Impostos sobre
+Vendas é uma despesa, não uma dedução de receita), então não existe uma
+receita líquida separada para usar. `total_receitas` também soma Receita de
+Serviços, que não tem CMV associado — o que afeta especificamente Margem
+Bruta.
 
 ---
 
@@ -1168,8 +1181,10 @@ Caixa 500,00 · Bancos 1.000,00 · Receita 2.000,00 · CMV **−500,00**.
       o caminho de denominador negativo não está funcionando — é exatamente o
       número mentiroso que este plano existe para evitar.
 - [ ] Margem Bruta acima de 100% (CMV negativo por estorno) é exibida como
-      `125,00%`, sem tratamento especial — o dado está certo, é o razão que é
-      atípico.
+      `125,00%`, sem tratamento especial no *valor* — o dado está certo, é a
+      razão que é atípica. A *causa*, porém, agora é surfaced: a observação do
+      indicador cita o CMV negativo (`-500,00`) e sugere verificar estornos em
+      Lançamentos.
 
 ### Portões automatizados
 
