@@ -422,12 +422,17 @@ input[type="file"] {
     padding-right: 0;
   }
 
+  /* Empilhado, o fio da conta T não pode ser 2px de tinta: essa é exatamente a
+     regra de subtotal, e o leitor acabou de aprendê-la quatro vezes descendo a
+     página. Vira divisor de seção (1px de pauta, o mesmo dispositivo de
+     .grafico) e o espaçamento inverte, para o fio se ligar ao título que
+     apresenta em vez do total que acabou de fechar. */
   .bp-coluna:last-child {
     padding-left: 0;
-    padding-top: 24px;
-    margin-top: 24px;
+    padding-top: 8px;
+    margin-top: 40px;
     border-left: none;
-    border-top: 2px solid var(--tinta);
+    border-top: 1px solid var(--pauta);
   }
 }
 
