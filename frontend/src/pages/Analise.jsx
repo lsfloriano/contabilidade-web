@@ -7,11 +7,19 @@ const DIRECAO_ROTULO = {
   menor_melhor: "↓ quanto menor, melhor",
 };
 
+// `direcao` e `formato` são strings soltas vindas do backend; um erro de
+// digitação lá não deve virar uma linha em branco aqui — deve aparecer, para
+// ser notado e corrigido.
+function rotuloDirecao(direcao) {
+  return DIRECAO_ROTULO[direcao] ?? `direção desconhecida: "${direcao}"`;
+}
+
 // O backend já entregou o número pronto; aqui só se escolhe a máscara.
 function formatarValor(valor, formato) {
   if (formato === "percentual") return `${fmt(valor * 100)}%`;
   if (formato === "vezes") return `${fmt(valor)} vezes`;
-  return fmt(valor);
+  if (formato === "indice") return fmt(valor);
+  return `${fmt(valor)} (formato desconhecido: "${formato}")`;
 }
 
 export default function Analise() {
@@ -40,6 +48,10 @@ export default function Analise() {
         <div className="analise-familia" key={familia.nome}>
           <h3>{familia.nome}</h3>
           <table className="analise-tabela">
+            <caption className="sr-only">
+              Indicadores de {familia.nome}: fórmula, substituição, direção
+              de leitura e valor calculado
+            </caption>
             <tbody>
               {familia.indicadores.map((indicador) => (
                 <tr key={indicador.chave}>
@@ -50,7 +62,7 @@ export default function Analise() {
                       {fmt(indicador.numerador_valor)} / {fmt(indicador.denominador_valor)}
                     </div>
                     <div className="analise-direcao">
-                      {DIRECAO_ROTULO[indicador.direcao]}
+                      {rotuloDirecao(indicador.direcao)}
                     </div>
                     {indicador.observacao && (
                       <div className="analise-observacao">{indicador.observacao}</div>

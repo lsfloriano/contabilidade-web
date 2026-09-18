@@ -47,7 +47,8 @@ th, td {
   color: #b91c1c;
 }
 
-.grafico-aviso {
+.grafico-aviso,
+.analise-nao-significativo {
   color: #92400e;
 }
 
@@ -191,6 +192,14 @@ th, td {
   margin-top: 4px;
 }
 
-.analise-nao-significativo {
-  color: #92400e;
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

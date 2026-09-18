@@ -265,6 +265,10 @@ def montar_analise(db: Session) -> dict:
             direcao=DIRECAO_MAIOR,
             formato=FORMATO_INDICE,
         ),
+        # A forma completa de Marion também subtrai despesas antecipadas do
+        # numerador. `seed.py` não tem conta de despesas antecipadas, então
+        # aqui a fórmula reduzida coincide com a completa — mas isso é uma
+        # propriedade deste plano de contas hoje, não uma definição.
         _indicador(
             chave="liquidez_seca",
             nome="Liquidez Seca",
@@ -312,6 +316,11 @@ def montar_analise(db: Session) -> dict:
             direcao=DIRECAO_MENOR,
             formato=FORMATO_PERCENTUAL,
         ),
+        # A fórmula clássica é (Investimentos + Imobilizado + Intangível) / PL.
+        # Usamos Ativo Não Circulante porque este plano de contas não tem uma
+        # conta de Realizável a Longo Prazo — então ANC e a soma clássica
+        # coincidem hoje. No dia em que uma conta de ARLP for semeada, este
+        # `formula` deixa de ser uma definição correta e precisa mudar junto.
         _indicador(
             chave="imobilizacao_pl",
             nome="Imobilização do Patrimônio Líquido",
