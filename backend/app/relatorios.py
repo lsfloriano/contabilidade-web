@@ -126,3 +126,247 @@ def montar_dre(db: Session) -> dict:
         "total_despesas": total_despesas,
         "resultado_periodo": total_receitas - total_despesas,
     }
+
+
+CODIGO_CAIXA = "1.1.01"
+CODIGO_BANCOS = "1.1.02"
+CODIGO_ESTOQUES = "1.1.04"
+CODIGO_CMV = "4.1.01"
+
+DIRECAO_MAIOR = "maior_melhor"
+DIRECAO_MENOR = "menor_melhor"
+
+FORMATO_INDICE = "indice"
+FORMATO_PERCENTUAL = "percentual"
+FORMATO_VEZES = "vezes"
+
+
+def _indicador(
+    chave: str,
+    nome: str,
+    formula: str,
+    numerador_nome: str,
+    numerador_valor: float,
+    denominador_nome: str,
+    denominador_valor: float,
+    direcao: str,
+    formato: str,
+    observacao: str | None = None,
+) -> dict:
+    """Monta um indicador já resolvido.
+
+    Divisão por zero aqui é rotina (empresa sem passivo circulante, razão
+    vazio), não exceção: devolve valor None e o motivo.
+
+    Denominador negativo produz um quociente definido mas financeiramente
+    enganoso: prejuízo dividido por PL negativo vira número positivo e é lido
+    como retorno; receita negativa faz o mesmo com as margens. A regra vale para
+    qualquer indicador, não para uma lista deles — é uma checagem sobre o
+    denominador, e é por isso que não existe flag por indicador aqui.
+    """
+    valor = None
+    motivo = None
+    nao_significativo = False
+
+    if denominador_valor == 0:
+        motivo = f"{denominador_nome} é zero."
+    elif denominador_valor < 0:
+        nao_significativo = True
+        motivo = (
+            f"{denominador_nome} é negativo. O quociente existe, mas muda de "
+            "sinal e seria lido como se a situação fosse melhor do que é. O "
+            "indicador não é significativo neste caso; use o Balanço "
+            "Patrimonial e a DRE."
+        )
+    else:
+        valor = numerador_valor / denominador_valor
+
+    return {
+        "chave": chave,
+        "nome": nome,
+        "valor": valor,
+        "formula": formula,
+        "numerador_nome": numerador_nome,
+        "numerador_valor": numerador_valor,
+        "denominador_nome": denominador_nome,
+        "denominador_valor": denominador_valor,
+        "direcao": direcao,
+        "formato": formato,
+        "motivo": motivo,
+        "nao_significativo": nao_significativo,
+        "observacao": observacao,
+    }
+
+
+def montar_analise(db: Session) -> dict:
+    balancete = calcular_balancete(db)
+    saldos = {c["codigo"]: c["saldo"] for c in balancete}
+    patrimoniais = [c for c in balancete if c["tipo"] == TipoConta.patrimonial.value]
+
+    def subtotal(grupo: str) -> float:
+        return sum(c["saldo"] for c in patrimoniais if c["grupo"] == grupo)
+
+    dre = montar_dre(db)
+    receita = dre["total_receitas"]
+    resultado = dre["resultado_periodo"]
+
+    ativo_circulante = subtotal(Grupo.ativo_circulante.value)
+    ativo_nao_circulante = subtotal(Grupo.ativo_nao_circulante.value)
+    passivo_circulante = subtotal(Grupo.passivo_circulante.value)
+    passivo_nao_circulante = subtotal(Grupo.passivo_nao_circulante.value)
+    # O PL do período inclui o resultado ainda não realizado, igual ao montar_bp.
+    # Isto não é opcional: sem somar o resultado, o denominador do ROE
+    # contradiria o Patrimônio Líquido que o usuário lê na aba do Balanço
+    # Patrimonial. Duas páginas discordando da mesma cifra é o tipo de
+    # inconsistência silenciosa que destrói a confiança numa ferramenta de
+    # ensino. Não "conserte" isto.
+    patrimonio_liquido = subtotal(Grupo.patrimonio_liquido.value) + resultado
+
+    ativo_total = ativo_circulante + ativo_nao_circulante
+    capital_terceiros = passivo_circulante + passivo_nao_circulante
+    estoques = saldos.get(CODIGO_ESTOQUES, 0.0)
+    disponivel = saldos.get(CODIGO_CAIXA, 0.0) + saldos.get(CODIGO_BANCOS, 0.0)
+    cmv = saldos.get(CODIGO_CMV, 0.0)
+
+    liquidez = [
+        _indicador(
+            chave="liquidez_corrente",
+            nome="Liquidez Corrente",
+            formula="Ativo Circulante / Passivo Circulante",
+            numerador_nome="Ativo Circulante",
+            numerador_valor=ativo_circulante,
+            denominador_nome="Passivo Circulante",
+            denominador_valor=passivo_circulante,
+            direcao=DIRECAO_MAIOR,
+            formato=FORMATO_INDICE,
+        ),
+        _indicador(
+            chave="liquidez_seca",
+            nome="Liquidez Seca",
+            formula="(Ativo Circulante − Estoques) / Passivo Circulante",
+            numerador_nome="Ativo Circulante − Estoques",
+            numerador_valor=ativo_circulante - estoques,
+            denominador_nome="Passivo Circulante",
+            denominador_valor=passivo_circulante,
+            direcao=DIRECAO_MAIOR,
+            formato=FORMATO_INDICE,
+        ),
+        _indicador(
+            chave="liquidez_imediata",
+            nome="Liquidez Imediata",
+            formula="(Caixa + Bancos) / Passivo Circulante",
+            numerador_nome="Caixa + Bancos",
+            numerador_valor=disponivel,
+            denominador_nome="Passivo Circulante",
+            denominador_valor=passivo_circulante,
+            direcao=DIRECAO_MAIOR,
+            formato=FORMATO_INDICE,
+        ),
+    ]
+
+    estrutura = [
+        _indicador(
+            chave="participacao_capital_terceiros",
+            nome="Participação de Capital de Terceiros",
+            formula="(Passivo Circulante + Passivo Não Circulante) / Patrimônio Líquido",
+            numerador_nome="Passivo Circulante + Passivo Não Circulante",
+            numerador_valor=capital_terceiros,
+            denominador_nome="Patrimônio Líquido",
+            denominador_valor=patrimonio_liquido,
+            direcao=DIRECAO_MENOR,
+            formato=FORMATO_PERCENTUAL,
+        ),
+        _indicador(
+            chave="composicao_endividamento",
+            nome="Composição do Endividamento",
+            formula="Passivo Circulante / (Passivo Circulante + Passivo Não Circulante)",
+            numerador_nome="Passivo Circulante",
+            numerador_valor=passivo_circulante,
+            denominador_nome="Passivo Circulante + Passivo Não Circulante",
+            denominador_valor=capital_terceiros,
+            direcao=DIRECAO_MENOR,
+            formato=FORMATO_PERCENTUAL,
+        ),
+        _indicador(
+            chave="imobilizacao_pl",
+            nome="Imobilização do Patrimônio Líquido",
+            formula="Ativo Não Circulante / Patrimônio Líquido",
+            numerador_nome="Ativo Não Circulante",
+            numerador_valor=ativo_nao_circulante,
+            denominador_nome="Patrimônio Líquido",
+            denominador_valor=patrimonio_liquido,
+            direcao=DIRECAO_MENOR,
+            formato=FORMATO_PERCENTUAL,
+        ),
+    ]
+
+    rentabilidade = [
+        _indicador(
+            chave="margem_bruta",
+            nome="Margem Bruta",
+            formula="(Receita − CMV) / Receita",
+            numerador_nome="Receita − CMV",
+            numerador_valor=receita - cmv,
+            denominador_nome="Receita",
+            denominador_valor=receita,
+            direcao=DIRECAO_MAIOR,
+            formato=FORMATO_PERCENTUAL,
+        ),
+        _indicador(
+            chave="margem_liquida",
+            nome="Margem Líquida",
+            formula="Resultado do Período / Receita",
+            numerador_nome="Resultado do Período",
+            numerador_valor=resultado,
+            denominador_nome="Receita",
+            denominador_valor=receita,
+            direcao=DIRECAO_MAIOR,
+            formato=FORMATO_PERCENTUAL,
+        ),
+        _indicador(
+            chave="roa",
+            nome="ROA — Retorno sobre o Ativo",
+            formula="Resultado do Período / Ativo Total",
+            numerador_nome="Resultado do Período",
+            numerador_valor=resultado,
+            denominador_nome="Ativo Total",
+            denominador_valor=ativo_total,
+            direcao=DIRECAO_MAIOR,
+            formato=FORMATO_PERCENTUAL,
+        ),
+        _indicador(
+            chave="roe",
+            nome="ROE — Retorno sobre o Patrimônio Líquido",
+            formula="Resultado do Período / Patrimônio Líquido",
+            numerador_nome="Resultado do Período",
+            numerador_valor=resultado,
+            denominador_nome="Patrimônio Líquido",
+            denominador_valor=patrimonio_liquido,
+            direcao=DIRECAO_MAIOR,
+            formato=FORMATO_PERCENTUAL,
+        ),
+        _indicador(
+            chave="giro_ativo",
+            nome="Giro do Ativo",
+            formula="Receita / Ativo Total",
+            numerador_nome="Receita",
+            numerador_valor=receita,
+            denominador_nome="Ativo Total",
+            denominador_valor=ativo_total,
+            direcao=DIRECAO_MAIOR,
+            formato=FORMATO_VEZES,
+            observacao=(
+                "Usa o Ativo Total do fim do período. A fórmula clássica usa a "
+                "média do ativo entre dois períodos; este app trabalha com um "
+                "único período contínuo."
+            ),
+        ),
+    ]
+
+    return {
+        "familias": [
+            {"nome": "Liquidez", "indicadores": liquidez},
+            {"nome": "Estrutura de Capital", "indicadores": estrutura},
+            {"nome": "Rentabilidade", "indicadores": rentabilidade},
+        ]
+    }
