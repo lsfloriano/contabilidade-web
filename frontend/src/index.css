@@ -87,8 +87,9 @@ h4 {
    Toda tabela do app é um razão; por isso o estilo é por elemento e nenhuma
    página precisa de classe na tag <table>. Larguras de borda escolhidas para
    resolver a colapsagem sem ambiguidade: na colapsagem a borda mais larga
-   vence, então 2px (subtotal) > 1px (fio de cabelo) e 3px double (total) >
-   2px. */
+   vence, então 2px (subtotal) > 1px (fio de cabelo). O 3px double do total
+   final não participa dessa colapsagem — é o mínimo em que `double` renderiza
+   como linha/vão/linha em vez de colapsar visualmente num traço só. */
 
 table {
   width: 100%;
