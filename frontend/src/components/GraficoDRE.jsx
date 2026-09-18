@@ -23,7 +23,9 @@ const LIMITE_ROTULO = 26;
 
 const COR_POSITIVO = "#2a78d6";
 const COR_NEGATIVO = "#e34948";
-const COR_CONECTOR = "#e1e0d9";
+// --pauta-fraca do index.css: mais leve que o eixo de propósito — o conector é
+// subordinado a ele — mas frio-neutro como o resto da paleta.
+const COR_CONECTOR = "#e3e6eb";
 
 function encurtar(texto) {
   return texto.length > LIMITE_ROTULO
