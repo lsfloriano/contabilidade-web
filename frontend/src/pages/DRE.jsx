@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getDRE } from "../api";
 import GraficoDRE from "../components/GraficoDRE";
+import { fmt, classeValor } from "../components/graficos-comuns";
 
 export default function DRE() {
   const [dre, setDre] = useState(null);
@@ -27,12 +28,14 @@ export default function DRE() {
           {dre.receitas.map((conta) => (
             <tr key={conta.codigo}>
               <td>{conta.nome}</td>
-              <td>{conta.valor.toFixed(2)}</td>
+              <td className={classeValor(conta.valor)}>{fmt(conta.valor)}</td>
             </tr>
           ))}
-          <tr className="total-linha">
+          <tr className="razao-subtotal">
             <td>Total de receitas</td>
-            <td>{dre.total_receitas.toFixed(2)}</td>
+            <td className={classeValor(dre.total_receitas)}>
+              {fmt(dre.total_receitas)}
+            </td>
           </tr>
         </tbody>
       </table>
@@ -43,19 +46,26 @@ export default function DRE() {
           {dre.despesas.map((conta) => (
             <tr key={conta.codigo}>
               <td>{conta.nome}</td>
-              <td>{conta.valor.toFixed(2)}</td>
+              <td className={classeValor(conta.valor)}>{fmt(conta.valor)}</td>
             </tr>
           ))}
-          <tr className="total-linha">
+          <tr className="razao-subtotal">
             <td>Total de despesas</td>
-            <td>{dre.total_despesas.toFixed(2)}</td>
+            <td className={classeValor(dre.total_despesas)}>
+              {fmt(dre.total_despesas)}
+            </td>
           </tr>
         </tbody>
       </table>
 
-      <p className="total-linha">
-        Resultado do período: {dre.resultado_periodo.toFixed(2)}
-        {dre.resultado_periodo >= 0 ? " (lucro)" : " (prejuízo)"}
+      <p className="razao-fechamento">
+        <span>
+          Resultado do período
+          {dre.resultado_periodo >= 0 ? " (lucro)" : " (prejuízo)"}
+        </span>
+        <span className={classeValor(dre.resultado_periodo)}>
+          {fmt(dre.resultado_periodo)}
+        </span>
       </p>
     </section>
   );
