@@ -19,8 +19,17 @@ const formatador = new Intl.NumberFormat("pt-BR", {
   maximumFractionDigits: 2,
 });
 
+// Sinal impresso e cor têm de concordar. Ambos passam por aqui primeiro: o
+// backend não arredonda (soma floats crus), então um resíduo de -1e-7 chegava
+// como "-0,00" em vermelho. Math.round(-0.5) é -0 em JS, daí a normalização
+// explícita do zero negativo — sem ela, 0 imprimiria com sinal de menos.
+function arredondar(valor) {
+  const n = Math.round(valor * 100) / 100;
+  return n === 0 ? 0 : n;
+}
+
 export function fmt(valor) {
-  return formatador.format(valor);
+  return formatador.format(arredondar(valor));
 }
 
 export const MENSAGEM_VAZIO =
@@ -55,5 +64,5 @@ export function caminhoBarra(x, y, largura, altura, raio, arredondarTopo) {
 // aparecer onde não se esperava, ele aparece em vermelho em vez de passar
 // despercebido.
 export function classeValor(valor) {
-  return valor < 0 ? "razao-valor valor-negativo" : "razao-valor";
+  return arredondar(valor) < 0 ? "razao-valor valor-negativo" : "razao-valor";
 }
