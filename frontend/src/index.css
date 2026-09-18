@@ -141,13 +141,6 @@ thead th {
   overflow-x: auto;
 }
 
-/* TEMPORÁRIO — ainda usada por BalancoPatrimonial.jsx e DRE.jsx até as Tarefas 4
-   e 5. Removida na Tarefa 6. */
-.total-linha {
-  font-weight: bold;
-  border-top: 2px solid var(--tinta);
-}
-
 /* ---- formulário ---- */
 
 .form-lancamento {
