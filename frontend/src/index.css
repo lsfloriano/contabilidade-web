@@ -35,7 +35,10 @@ body {
   gap: 4px;
   background: var(--papel);
   border-bottom: 1px solid var(--pauta);
-  padding: 8px 24px 0;
+  /* 12px à esquerda, não 24: o .tab tem 12px de padding próprio, então o
+     *texto* da primeira aba cai em 24px e alinha com o texto do main. Alinhar
+     as caixas deixaria os rótulos 12px fora de prumo com o título abaixo. */
+  padding: 8px 24px 0 12px;
   max-width: 948px;
   margin: 0 auto;
   box-sizing: border-box;
@@ -404,8 +407,9 @@ input[type="file"] {
   }
 
   .tabs {
-    padding: 8px 16px 0;
+    padding: 8px 16px 0 4px;
     overflow-x: auto;
+    overflow-y: hidden;
   }
 
   .form-lancamento {
