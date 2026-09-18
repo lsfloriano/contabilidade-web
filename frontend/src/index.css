@@ -36,6 +36,9 @@ body {
   background: var(--papel);
   border-bottom: 1px solid var(--pauta);
   padding: 8px 24px 0;
+  max-width: 948px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .tab {
