@@ -228,6 +228,13 @@ def montar_analise(db: Session) -> dict:
     disponivel = saldos.get(CODIGO_CAIXA, 0.0) + saldos.get(CODIGO_BANCOS, 0.0)
     cmv = saldos.get(CODIGO_CMV, 0.0)
 
+    margem_bruta_observacao = (
+        "Usa a receita bruta. Nesta aplicação, Impostos sobre Vendas é "
+        "classificado como despesa, então não existe receita líquida "
+        "separada — a margem clássica usa a receita líquida de vendas. A "
+        "receita também inclui Receita de Serviços, que não tem CMV."
+    )
+
     liquidez = [
         _indicador(
             chave="liquidez_corrente",
@@ -311,6 +318,7 @@ def montar_analise(db: Session) -> dict:
             denominador_valor=receita,
             direcao=DIRECAO_MAIOR,
             formato=FORMATO_PERCENTUAL,
+            observacao=margem_bruta_observacao,
         ),
         _indicador(
             chave="margem_liquida",
@@ -322,6 +330,11 @@ def montar_analise(db: Session) -> dict:
             denominador_valor=receita,
             direcao=DIRECAO_MAIOR,
             formato=FORMATO_PERCENTUAL,
+            observacao=(
+                "Usa a receita bruta. Nesta aplicação, Impostos sobre Vendas é "
+                "classificado como despesa, então não existe receita líquida "
+                "separada — a margem clássica usa a receita líquida de vendas."
+            ),
         ),
         _indicador(
             chave="roa",
@@ -333,6 +346,11 @@ def montar_analise(db: Session) -> dict:
             denominador_valor=ativo_total,
             direcao=DIRECAO_MAIOR,
             formato=FORMATO_PERCENTUAL,
+            observacao=(
+                "Usa o saldo final do Ativo, não a média do período que a "
+                "fórmula clássica pede. Esta aplicação trabalha com um período "
+                "contínuo único."
+            ),
         ),
         _indicador(
             chave="roe",
@@ -344,6 +362,14 @@ def montar_analise(db: Session) -> dict:
             denominador_valor=patrimonio_liquido,
             direcao=DIRECAO_MAIOR,
             formato=FORMATO_PERCENTUAL,
+            observacao=(
+                "Usa o saldo final do Patrimônio Líquido, não a média do "
+                "período. Além disso, o PL aqui já inclui o resultado do "
+                "período — mesmo critério do Balanço Patrimonial, para as duas "
+                "páginas não divergirem —, de modo que o numerador está contido "
+                "no denominador. A fórmula clássica usa o PL inicial ou médio "
+                "justamente para evitar isso."
+            ),
         ),
         _indicador(
             chave="giro_ativo",
