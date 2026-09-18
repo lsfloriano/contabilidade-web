@@ -20,7 +20,17 @@ const CENTROS = [140, 280];
 // Tem de acompanhar --papel em index.css: é a cor por trás dos vãos entre
 // segmentos empilhados, e uma divergência aparece como faixas claras entre eles.
 const SUPERFICIE = "#fcfcfb";
-const PALETA = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4"];
+// Paleta categorica puxada para perto do papel: tinta impressa, nao tela.
+// Validada em contraste (todas >= 3.0 contra --papel) e em dicromacia. O par
+// dificil e Passivo Circulante vs Patrimonio Liquido sob deuteranopia; eles se
+// separam por claridade (L* ~58 contra ~28), nao por matiz, que e o que sobra
+// quando o eixo vermelho-verde some. Se mexer numa destas, revalide: a paleta
+// saturada anterior tinha tres cores abaixo de 3.0 e esse par em deltaE 13.
+//
+// Os cinco nunca aparecem juntos — a barra do Ativo empilha os dois primeiros,
+// a de Passivo+PL os tres ultimos —, entao so pares dentro da mesma pilha
+// precisam ser distinguiveis.
+const PALETA = ["#3f5f8a", "#9e5535", "#5a9a94", "#8a7a33", "#5e3a4c"];
 
 function corDoSlot(indice) {
   return PALETA[indice];

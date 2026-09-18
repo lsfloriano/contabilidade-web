@@ -20,8 +20,11 @@ const PLOT_H = VIEW_H - PAD_TOP - PAD_BOTTOM; // 280
 const EIXO_X_Y = PAD_TOP + PLOT_H + 30; // 338
 const LIMITE_ROTULO = 26;
 
-const COR_POSITIVO = "#2a78d6";
-const COR_NEGATIVO = "#e34948";
+// --tinta e --vermelho do index.css. A cascata tem so duas cores semanticas
+// (aumenta / reduz), e sao exatamente as duas que a tabela logo abaixo ja usa:
+// numero preto e numero vermelho, que e a convencao contabil de origem.
+const COR_POSITIVO = "#1a2233";
+const COR_NEGATIVO = "#a4243b";
 // --pauta-fraca do index.css: mais leve que o eixo de propósito — o conector é
 // subordinado a ele — mas frio-neutro como o resto da paleta.
 const COR_CONECTOR = "#e3e6eb";
