@@ -80,3 +80,28 @@ class UploadErro(BaseModel):
 class UploadResultado(BaseModel):
     inseridos: int
     erros: list[UploadErro]
+
+
+class IndicadorOut(BaseModel):
+    chave: str
+    nome: str
+    valor: Optional[float]
+    formula: str
+    numerador_nome: str
+    numerador_valor: float
+    denominador_nome: str
+    denominador_valor: float
+    direcao: str
+    formato: str
+    motivo: Optional[str] = None
+    nao_significativo: bool = False
+    observacao: Optional[str] = None
+
+
+class FamiliaIndicadores(BaseModel):
+    nome: str
+    indicadores: list[IndicadorOut]
+
+
+class AnaliseReport(BaseModel):
+    familias: list[FamiliaIndicadores]

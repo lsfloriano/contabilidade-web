@@ -183,3 +183,29 @@ def test_analise_marca_nao_significativo_com_receita_negativa(db_session):
     assert corrente["valor"] is None
     assert corrente["nao_significativo"] is False
     assert corrente["motivo"] == "Passivo Circulante é zero."
+
+
+def test_endpoint_analise(client):
+    client.post("/lancamentos", json={"data": "2026-01-02", "conta_debito": "1.1.01", "conta_credito": "2.3.01", "valor": 8000.0})
+    client.post("/lancamentos", json={"data": "2026-01-05", "conta_debito": "1.1.04", "conta_credito": "2.1.01", "valor": 2000.0})
+
+    resposta = client.get("/relatorios/analise")
+    assert resposta.status_code == 200
+    corpo = resposta.json()
+
+    assert [f["nome"] for f in corpo["familias"]] == [
+        "Liquidez",
+        "Estrutura de Capital",
+        "Rentabilidade",
+    ]
+
+    # AC = Caixa 8.000 + Estoques 2.000 = 10.000; PC = Fornecedores 2.000.
+    corrente = _indicador(corpo, "liquidez_corrente")
+    assert corrente["valor"] == 5.0
+    assert corrente["numerador_valor"] == 10000.0
+    assert corrente["denominador_valor"] == 2000.0
+
+    # Sem receita no período, a margem bruta não pode ser calculada.
+    margem_bruta = _indicador(corpo, "margem_bruta")
+    assert margem_bruta["valor"] is None
+    assert margem_bruta["motivo"] == "Receita é zero."
