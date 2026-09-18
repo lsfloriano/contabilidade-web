@@ -383,11 +383,8 @@ input[type="file"] {
 }
 
 .analise-valor {
-  text-align: right;
-  white-space: nowrap;
   font-size: 18px;
   width: 40%;
-  font-variant-numeric: tabular-nums;
 }
 
 .analise-motivo {

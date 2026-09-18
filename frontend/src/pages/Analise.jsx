@@ -68,7 +68,7 @@ export default function Analise() {
                       <div className="analise-observacao">{indicador.observacao}</div>
                     )}
                   </td>
-                  <td className="analise-valor">
+                  <td className="razao-valor analise-valor">
                     {indicador.valor === null
                       ? "—"
                       : formatarValor(indicador.valor, indicador.formato)}
