@@ -147,7 +147,7 @@ export default function GraficoDRE({ dre }) {
           const cresce = passo.fim >= passo.inicio;
           const cor = passo.positivo ? COR_POSITIVO : COR_NEGATIVO;
           const rotuloValor =
-            (passo.positivo ? "" : "−") + fmt(Math.abs(passo.valor));
+            (passo.positivo ? "" : "-") + fmt(Math.abs(passo.valor));
           const yRotulo = cresce ? yTopo - 6 : yTopo + altura + 14;
 
           return (
