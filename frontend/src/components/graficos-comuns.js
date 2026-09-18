@@ -12,7 +12,6 @@ export const RAIO = 4;
 export const COR_EIXO = "#c8cdd6";
 export const COR_TEXTO = "#1a2233";
 export const COR_TEXTO_SEC = "#5a6472";
-export const COR_TEXTO_MUDO = "#5a6472";
 
 const formatador = new Intl.NumberFormat("pt-BR", {
   minimumFractionDigits: 2,

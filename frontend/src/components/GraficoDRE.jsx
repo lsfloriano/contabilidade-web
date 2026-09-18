@@ -4,7 +4,6 @@ import {
   COR_EIXO,
   COR_TEXTO,
   COR_TEXTO_SEC,
-  COR_TEXTO_MUDO,
   fmt,
   MENSAGEM_VAZIO,
   caminhoBarra,
@@ -136,7 +135,7 @@ export default function GraficoDRE({ dre }) {
           y={zeroY + 4}
           textAnchor="end"
           fontSize={10}
-          fill={COR_TEXTO_MUDO}
+          fill={COR_TEXTO_SEC}
         >
           0
         </text>
