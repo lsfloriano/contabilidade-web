@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getContas, getLancamentos, criarLancamento, uploadLancamentos } from "../api";
+import { fmt, classeValor } from "../components/graficos-comuns";
 
 const LANCAMENTO_VAZIO = {
   data: "",
@@ -56,9 +57,9 @@ export default function Lancamentos() {
     <section>
       <h2>Lançamentos</h2>
 
-      <form onSubmit={aoSubmeter}>
-        <label>
-          Data
+      <form className="form-lancamento" onSubmit={aoSubmeter}>
+        <label className="campo">
+          <span className="campo-rotulo">Data</span>
           <input
             type="date"
             value={form.data}
@@ -66,8 +67,8 @@ export default function Lancamentos() {
             required
           />
         </label>
-        <label>
-          Conta débito
+        <label className="campo">
+          <span className="campo-rotulo">Conta débito</span>
           <select
             value={form.conta_debito}
             onChange={(e) => setForm({ ...form, conta_debito: e.target.value })}
@@ -81,8 +82,8 @@ export default function Lancamentos() {
             ))}
           </select>
         </label>
-        <label>
-          Conta crédito
+        <label className="campo">
+          <span className="campo-rotulo">Conta crédito</span>
           <select
             value={form.conta_credito}
             onChange={(e) => setForm({ ...form, conta_credito: e.target.value })}
@@ -96,8 +97,8 @@ export default function Lancamentos() {
             ))}
           </select>
         </label>
-        <label>
-          Valor
+        <label className="campo">
+          <span className="campo-rotulo">Valor</span>
           <input
             type="number"
             step="0.01"
@@ -107,15 +108,17 @@ export default function Lancamentos() {
             required
           />
         </label>
-        <label>
-          Histórico
+        <label className="campo">
+          <span className="campo-rotulo">Histórico</span>
           <input
             type="text"
             value={form.historico}
             onChange={(e) => setForm({ ...form, historico: e.target.value })}
           />
         </label>
-        <button type="submit">Lançar</button>
+        <button type="submit" className="botao">
+          Lançar
+        </button>
       </form>
       {erroForm && <p className="erro">{erroForm}</p>}
 
@@ -138,28 +141,32 @@ export default function Lancamentos() {
       )}
 
       <h3>Lançamentos existentes</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Débito</th>
-            <th>Crédito</th>
-            <th>Valor</th>
-            <th>Histórico</th>
-          </tr>
-        </thead>
-        <tbody>
-          {lancamentos.map((lancamento) => (
-            <tr key={lancamento.id}>
-              <td>{lancamento.data}</td>
-              <td>{lancamento.conta_debito}</td>
-              <td>{lancamento.conta_credito}</td>
-              <td>{lancamento.valor.toFixed(2)}</td>
-              <td>{lancamento.historico}</td>
+      <div className="tabela-rolagem">
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Débito</th>
+              <th>Crédito</th>
+              <th className="razao-valor">Valor</th>
+              <th>Histórico</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {lancamentos.map((lancamento) => (
+              <tr key={lancamento.id}>
+                <td>{lancamento.data}</td>
+                <td>{lancamento.conta_debito}</td>
+                <td>{lancamento.conta_credito}</td>
+                <td className={classeValor(lancamento.valor)}>
+                  {fmt(lancamento.valor)}
+                </td>
+                <td>{lancamento.historico}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }
