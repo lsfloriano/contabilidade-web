@@ -1,7 +1,7 @@
-// Vocabulário compartilhado pelos gráficos de BP e DRE: formatação,
-// cores de chrome/tinta e geometria de barra que são idênticas nos dois
-// componentes. Não abstrai a estrutura dos gráficos em si — cada um
-// mantém seu próprio layout, eixos e legenda.
+// Vocabulário compartilhado de apresentação: formatação de número, cores de
+// chrome/tinta e geometria de barra. Os gráficos de BP e DRE usam tudo; a
+// página de Análise usa só o fmt. Não abstrai a estrutura dos gráficos em si —
+// cada um mantém seu próprio layout, eixos e legenda.
 
 export const BAR_W = 24;
 export const RAIO = 4;

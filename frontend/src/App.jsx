@@ -3,12 +3,14 @@ import Lancamentos from "./pages/Lancamentos";
 import Balancete from "./pages/Balancete";
 import BalancoPatrimonial from "./pages/BalancoPatrimonial";
 import DRE from "./pages/DRE";
+import Analise from "./pages/Analise";
 
 const ABAS = {
   lancamentos: { rotulo: "Lançamentos", componente: Lancamentos },
   balancete: { rotulo: "Balancete", componente: Balancete },
   bp: { rotulo: "Balanço Patrimonial", componente: BalancoPatrimonial },
   dre: { rotulo: "DRE", componente: DRE },
+  analise: { rotulo: "Análise", componente: Analise },
 };
 
 export default function App() {

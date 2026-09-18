@@ -48,3 +48,7 @@ export function getBP() {
 export function getDRE() {
   return fetch(`${API_BASE}/relatorios/dre`).then(handleResponse);
 }
+
+export function getAnalise() {
+  return fetch(`${API_BASE}/relatorios/analise`).then(handleResponse);
+}
