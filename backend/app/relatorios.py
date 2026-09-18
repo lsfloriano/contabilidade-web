@@ -141,6 +141,15 @@ FORMATO_PERCENTUAL = "percentual"
 FORMATO_VEZES = "vezes"
 
 
+def _formatar_pt_br(valor: float) -> str:
+    """Formata um número no padrão pt-BR (milhar '.', decimal ','), o mesmo
+    formato que `fmt` produz no frontend (graficos-comuns.js), para que um
+    valor citado em texto no backend não destoe dos números da tabela."""
+    texto = f"{abs(valor):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    sinal = "-" if valor < 0 else ""
+    return f"{sinal}{texto}"
+
+
 def _indicador(
     chave: str,
     nome: str,
@@ -234,6 +243,15 @@ def montar_analise(db: Session) -> dict:
         "separada — a margem clássica usa a receita líquida de vendas. A "
         "receita também inclui Receita de Serviços, que não tem CMV."
     )
+    if cmv < 0:
+        # Mesma causa raiz do aviso de GraficoDRE ("CMV negativa não pode ser
+        # representada na cascata"), mas aqui o CMV nem aparece na linha de
+        # substituição — sem isto, uma margem acima de 100% fica sem explicação
+        # nesta página.
+        margem_bruta_observacao += (
+            f" O CMV do período é negativo ({_formatar_pt_br(cmv)}), o que "
+            "eleva a margem acima de 100%; verifique estornos em Lançamentos."
+        )
 
     liquidez = [
         _indicador(
