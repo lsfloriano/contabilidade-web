@@ -1,11 +1,29 @@
+from datetime import date
+
 import pandas as pd
 from sqlalchemy.orm import Session
 
 from app.models import Lancamento, ContaContabil, Natureza, Grupo, TipoConta
 
 
-def _lancamentos_dataframe(db: Session) -> pd.DataFrame:
-    lancamentos = db.query(Lancamento).all()
+def _lancamentos_dataframe(
+    db: Session,
+    data_inicio: date | None = None,
+    data_fim: date | None = None,
+) -> pd.DataFrame:
+    """Lançamentos como DataFrame, opcionalmente recortados por data.
+
+    O filtro é aplicado na consulta, não no DataFrame: com os dois parâmetros
+    `None` — o padrão, e o que as quatro páginas existentes usam — a consulta é
+    exatamente a de antes e o DataFrame sai idêntico, inclusive nas colunas
+    (nenhuma coluna `data` é acrescentada).
+    """
+    consulta = db.query(Lancamento)
+    if data_inicio is not None:
+        consulta = consulta.filter(Lancamento.data >= data_inicio)
+    if data_fim is not None:
+        consulta = consulta.filter(Lancamento.data <= data_fim)
+    lancamentos = consulta.all()
     rows = [
         {"conta_debito": l.conta_debito, "conta_credito": l.conta_credito, "valor": float(l.valor)}
         for l in lancamentos
@@ -14,7 +32,7 @@ def _lancamentos_dataframe(db: Session) -> pd.DataFrame:
 
 
 def _contas_dataframe(db: Session) -> pd.DataFrame:
-    contas = db.query(ContaContabil).all()
+    contas = db.query(ContaContabil).order_by(ContaContabil.codigo).all()
     return pd.DataFrame([
         {
             "codigo": c.codigo,
@@ -27,8 +45,12 @@ def _contas_dataframe(db: Session) -> pd.DataFrame:
     ])
 
 
-def calcular_balancete(db: Session) -> list[dict]:
-    lanc_df = _lancamentos_dataframe(db)
+def calcular_balancete(
+    db: Session,
+    data_inicio: date | None = None,
+    data_fim: date | None = None,
+) -> list[dict]:
+    lanc_df = _lancamentos_dataframe(db, data_inicio=data_inicio, data_fim=data_fim)
     contas_df = _contas_dataframe(db)
 
     if lanc_df.empty:
@@ -95,8 +117,10 @@ def _agrupar_secoes(contas: list[dict], grupos: list[str]) -> tuple[list[dict], 
     return secoes, total
 
 
-def montar_bp(db: Session) -> dict:
-    balancete = calcular_balancete(db)
+def montar_bp(db: Session, data_corte: date | None = None) -> dict:
+    # BP é foto: acumula desde o primeiro lançamento até `data_corte`, que por
+    # isso entra como `data_fim` e não tem contraparte de início.
+    balancete = calcular_balancete(db, data_fim=data_corte)
     patrimoniais = [c for c in balancete if c["tipo"] == TipoConta.patrimonial.value]
     resultado = [c for c in balancete if c["tipo"] == TipoConta.resultado.value]
 
@@ -125,8 +149,14 @@ def montar_bp(db: Session) -> dict:
     }
 
 
-def montar_dre(db: Session) -> dict:
-    balancete = calcular_balancete(db)
+def montar_dre(
+    db: Session,
+    data_inicio: date | None = None,
+    data_fim: date | None = None,
+) -> dict:
+    # DRE é fluxo: só o que ocorreu dentro do intervalo. Sem os parâmetros, o
+    # comportamento de hoje continua — período contínuo único, desde o início.
+    balancete = calcular_balancete(db, data_inicio=data_inicio, data_fim=data_fim)
     resultado_contas = [c for c in balancete if c["tipo"] == TipoConta.resultado.value]
 
     receitas = [c for c in resultado_contas if c["grupo"] == Grupo.receita.value]

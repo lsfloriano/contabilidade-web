@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -13,14 +15,22 @@ def obter_balancete(db: Session = Depends(get_db)):
     return montar_balancete(db)
 
 
+# BP é foto: uma data de corte só, sem início — o saldo acumula desde o
+# primeiro lançamento. Sem o parâmetro, soma a base inteira, como antes.
 @router.get("/bp", response_model=BPReport)
-def obter_bp(db: Session = Depends(get_db)):
-    return montar_bp(db)
+def obter_bp(data_corte: date | None = None, db: Session = Depends(get_db)):
+    return montar_bp(db, data_corte=data_corte)
 
 
+# DRE é fluxo: um intervalo. Os dois parâmetros são independentes e opcionais;
+# sem nenhum deles, o comportamento é o de hoje.
 @router.get("/dre", response_model=DREReport)
-def obter_dre(db: Session = Depends(get_db)):
-    return montar_dre(db)
+def obter_dre(
+    data_inicio: date | None = None,
+    data_fim: date | None = None,
+    db: Session = Depends(get_db),
+):
+    return montar_dre(db, data_inicio=data_inicio, data_fim=data_fim)
 
 
 @router.get("/analise", response_model=AnaliseReport)
