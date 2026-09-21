@@ -6,7 +6,13 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.models import Lancamento
-from app.schemas import LancamentoCreate, LancamentoOut, UploadErro, UploadResultado
+from app.schemas import (
+    LancamentoCreate,
+    LancamentoEstornoCreate,
+    LancamentoOut,
+    UploadErro,
+    UploadResultado,
+)
 from app.validacao import validar_lancamento, LancamentoInvalido
 
 router = APIRouter()
@@ -20,6 +26,48 @@ def criar_lancamento(payload: LancamentoCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=422, detail=str(exc))
 
     lancamento = Lancamento(**payload.model_dump())
+    db.add(lancamento)
+    db.commit()
+    db.refresh(lancamento)
+    return lancamento
+
+
+def _historico_padrao_estorno(lancamento_id: int, historico_original: str | None) -> str:
+    if historico_original:
+        return f"Estorno do lançamento #{lancamento_id}: {historico_original}"
+    return f"Estorno do lançamento #{lancamento_id}"
+
+
+@router.post("/lancamentos/{lancamento_id}/estorno", response_model=LancamentoOut, status_code=201)
+def estornar_lancamento(
+    lancamento_id: int,
+    payload: LancamentoEstornoCreate,
+    db: Session = Depends(get_db),
+):
+    original = db.query(Lancamento).filter_by(id=lancamento_id).first()
+    if original is None:
+        raise HTTPException(status_code=404, detail=f"lançamento #{lancamento_id} não existe")
+
+    # O estorno é o reverso exato: os dois lados trocam, o valor é o mesmo.
+    conta_debito = original.conta_credito
+    conta_credito = original.conta_debito
+    valor = float(original.valor)
+
+    # A mesma validação de POST /lancamentos. Redundante na prática (o reverso
+    # de um lançamento válido é sempre válido), mas sem custo e consistente.
+    try:
+        validar_lancamento(db, conta_debito, conta_credito, valor)
+    except LancamentoInvalido as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+
+    lancamento = Lancamento(
+        data=payload.data,
+        conta_debito=conta_debito,
+        conta_credito=conta_credito,
+        valor=valor,
+        historico=payload.historico or _historico_padrao_estorno(lancamento_id, original.historico),
+        estorno_de=lancamento_id,
+    )
     db.add(lancamento)
     db.commit()
     db.refresh(lancamento)

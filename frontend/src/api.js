@@ -28,6 +28,16 @@ export function criarLancamento(lancamento) {
   }).then(handleResponse);
 }
 
+// `dados` é { data, historico }: contas e valor não vão no corpo — o backend
+// os deriva do lançamento original, invertendo os dois lados.
+export function estornarLancamento(id, dados) {
+  return fetch(`${API_BASE}/lancamentos/${id}/estorno`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(dados),
+  }).then(handleResponse);
+}
+
 export function uploadLancamentos(arquivo) {
   const formData = new FormData();
   formData.append("arquivo", arquivo);
