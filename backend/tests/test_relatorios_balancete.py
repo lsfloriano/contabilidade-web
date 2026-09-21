@@ -57,6 +57,73 @@ def test_montar_balancete_sem_lancamentos_totais_zerados(db_session):
     assert balancete["total_credito"] == 0.0
 
 
+def test_calcular_balancete_filtra_por_intervalo(db_session):
+    # Três lançamentos idênticos exceto pela data: um antes do início, um
+    # dentro, um depois do fim. Só o do meio pode contar.
+    db_session.add_all([
+        Lancamento(data=date(2026, 1, 31), conta_debito="1.1.01", conta_credito="2.3.01", valor=Decimal("1000.00")),
+        Lancamento(data=date(2026, 2, 15), conta_debito="1.1.01", conta_credito="2.3.01", valor=Decimal("200.00")),
+        Lancamento(data=date(2026, 3, 1), conta_debito="1.1.01", conta_credito="2.3.01", valor=Decimal("40.00")),
+    ])
+    db_session.commit()
+
+    balancete = calcular_balancete(
+        db_session, data_inicio=date(2026, 2, 1), data_fim=date(2026, 2, 28)
+    )
+
+    caixa = next(c for c in balancete if c["codigo"] == "1.1.01")
+    assert caixa["total_debito"] == 200.00
+    assert caixa["total_credito"] == 0.00
+    assert caixa["saldo"] == 200.00
+
+    capital = next(c for c in balancete if c["codigo"] == "2.3.01")
+    assert capital["saldo"] == 200.00
+
+    # O plano de contas inteiro continua na lista; conta sem lançamento no
+    # recorte aparece zerada, não some. É essa propriedade que garante que os
+    # dois períodos de uma comparação tenham sempre as mesmas linhas.
+    assert len(balancete) == 20
+    estoques = next(c for c in balancete if c["codigo"] == "1.1.04")
+    assert estoques["saldo"] == 0.0
+
+
+def test_calcular_balancete_intervalo_inclui_as_datas_de_borda(db_session):
+    # As duas pontas são inclusivas: data >= inicio E data <= fim.
+    db_session.add_all([
+        Lancamento(data=date(2026, 2, 1), conta_debito="1.1.01", conta_credito="2.3.01", valor=Decimal("100.00")),
+        Lancamento(data=date(2026, 2, 28), conta_debito="1.1.01", conta_credito="2.3.01", valor=Decimal("25.00")),
+    ])
+    db_session.commit()
+
+    balancete = calcular_balancete(
+        db_session, data_inicio=date(2026, 2, 1), data_fim=date(2026, 2, 28)
+    )
+
+    caixa = next(c for c in balancete if c["codigo"] == "1.1.01")
+    assert caixa["saldo"] == 125.00
+
+
+def test_calcular_balancete_sem_parametros_soma_todos_os_periodos(db_session):
+    # Regressão: os parâmetros novos são opcionais e o padrão é não filtrar
+    # nada — nem por data futura. É o que mantém Balancete, BP, DRE e Análise
+    # com o comportamento de hoje.
+    db_session.add_all([
+        Lancamento(data=date(2026, 1, 31), conta_debito="1.1.01", conta_credito="2.3.01", valor=Decimal("1000.00")),
+        Lancamento(data=date(2026, 2, 15), conta_debito="1.1.01", conta_credito="2.3.01", valor=Decimal("200.00")),
+        Lancamento(data=date(2099, 12, 31), conta_debito="1.1.01", conta_credito="2.3.01", valor=Decimal("40.00")),
+    ])
+    db_session.commit()
+
+    balancete = calcular_balancete(db_session)
+
+    caixa = next(c for c in balancete if c["codigo"] == "1.1.01")
+    assert caixa["total_debito"] == 1240.00
+    assert caixa["saldo"] == 1240.00
+
+    capital = next(c for c in balancete if c["codigo"] == "2.3.01")
+    assert capital["saldo"] == 1240.00
+
+
 def test_endpoint_balancete(client, db_session):
     db_session.add(Lancamento(data=date(2026, 1, 5), conta_debito="1.1.01", conta_credito="2.3.01", valor=Decimal("1000.00")))
     db_session.commit()
