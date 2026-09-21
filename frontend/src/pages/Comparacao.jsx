@@ -214,7 +214,11 @@ export default function Comparacao() {
           <h3>Balanço Patrimonial</h3>
           <p className="comparacao-legenda">
             Foto acumulada até {formatarData(dados.p1.fim)} (Período 1) e até{" "}
-            {formatarData(dados.p2.fim)} (Período 2).
+            {formatarData(dados.p2.fim)} (Período 2). A linha "Resultado do
+            Exercício (não realizado)" acumula desde o primeiro lançamento até
+            a data de fim de cada período, enquanto a DRE abaixo mostra só o
+            que ocorreu dentro do intervalo — por isso os dois "Resultado"
+            podem divergir, e isso não é um erro.
           </p>
           {!dados.bp1.balanceado && (
             <p className="erro">
