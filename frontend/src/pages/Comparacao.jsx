@@ -30,12 +30,12 @@ function classeVariacao(percentual) {
   return percentual === null ? "razao-valor" : classeValor(percentual);
 }
 
-function TabelaComparacao({ linhas }) {
+function TabelaComparacao({ linhas, tituloConta = "Conta" }) {
   return (
     <table>
       <thead>
         <tr>
-          <th className="comparacao-conta">Conta</th>
+          <th className="comparacao-conta">{tituloConta}</th>
           <th className="razao-valor">Período 1</th>
           <th className="razao-valor">Período 2</th>
           <th className="razao-valor">Variação</th>
@@ -303,6 +303,7 @@ export default function Comparacao() {
           <h4>Resultado</h4>
           <div className="tabela-rolagem">
             <TabelaComparacao
+              tituloConta=""
               linhas={[
                 linhaTotal(
                   "resultado-periodo",
