@@ -32,7 +32,7 @@ def _lancamentos_dataframe(
 
 
 def _contas_dataframe(db: Session) -> pd.DataFrame:
-    contas = db.query(ContaContabil).all()
+    contas = db.query(ContaContabil).order_by(ContaContabil.codigo).all()
     return pd.DataFrame([
         {
             "codigo": c.codigo,
