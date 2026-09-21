@@ -13,9 +13,10 @@ from app.relatorios import (
     montar_bp_planilha,
     montar_dre,
     montar_dre_planilha,
+    montar_dfc,
     montar_analise,
 )
-from app.schemas import BalanceteReport, BPReport, DREReport, AnaliseReport
+from app.schemas import BalanceteReport, BPReport, DREReport, DFCReport, AnaliseReport
 
 router = APIRouter(prefix="/relatorios")
 
@@ -67,6 +68,13 @@ def obter_dre(
     db: Session = Depends(get_db),
 ):
     return montar_dre(db, data_inicio=data_inicio, data_fim=data_fim)
+
+
+# DFC não tem filtro de data: segue a convenção de Balancete/BP/DRE antes da
+# Comparação existir — acumula desde o primeiro lançamento.
+@router.get("/dfc", response_model=DFCReport)
+def obter_dfc(db: Session = Depends(get_db)):
+    return montar_dfc(db)
 
 
 @router.get("/analise", response_model=AnaliseReport)

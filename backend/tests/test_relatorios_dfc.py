@@ -239,3 +239,38 @@ def test_montar_dfc_fecha_com_saldo_de_caixa_e_bancos_do_balancete(db_session):
 
     assert dfc["saldo_final"] == saldo_caixa_bancos
     assert dfc["confere"] is True
+
+
+def test_endpoint_dfc(client):
+    resposta = client.post(
+        "/lancamentos",
+        json={"data": "2026-01-02", "conta_debito": "1.1.01", "conta_credito": "2.3.01", "valor": 5000.0},
+    )
+    assert resposta.status_code == 201
+    client.post(
+        "/lancamentos",
+        json={"data": "2026-01-05", "conta_debito": "1.2.01", "conta_credito": "1.1.01", "valor": 1000.0},
+    )
+    client.post(
+        "/lancamentos",
+        json={"data": "2026-01-08", "conta_debito": "1.1.01", "conta_credito": "3.1.01", "valor": 800.0},
+    )
+
+    resposta = client.get("/relatorios/dfc")
+    assert resposta.status_code == 200
+    corpo = resposta.json()
+
+    # Operacional +800 (Receita de Vendas), investimento −1000 (Imobilizado),
+    # financiamento +5000 (Capital Social): 800 − 1000 + 5000 = 4800.
+    # Pelo outro caminho, Caixa: +5000 +800 −1000 = 4800.
+    assert corpo["subtotal_operacionais"] == 800.0
+    assert corpo["subtotal_investimentos"] == -1000.0
+    assert corpo["subtotal_financiamentos"] == 5000.0
+    assert corpo["variacao_liquida"] == 4800.0
+    assert corpo["saldo_inicial"] == 0.0
+    assert corpo["saldo_final"] == 4800.0
+    assert corpo["confere"] is True
+
+    capital = next(l for l in corpo["financiamentos"] if l["codigo"] == "2.3.01")
+    assert capital["nome"] == "Capital Social"
+    assert capital["valor"] == 5000.0
