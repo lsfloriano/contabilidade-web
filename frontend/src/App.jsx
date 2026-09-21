@@ -3,6 +3,7 @@ import Lancamentos from "./pages/Lancamentos";
 import Balancete from "./pages/Balancete";
 import BalancoPatrimonial from "./pages/BalancoPatrimonial";
 import DRE from "./pages/DRE";
+import Dfc from "./pages/Dfc";
 import Analise from "./pages/Analise";
 import Comparacao from "./pages/Comparacao";
 
@@ -11,6 +12,7 @@ const ABAS = {
   balancete: { rotulo: "Balancete", componente: Balancete },
   bp: { rotulo: "Balanço Patrimonial", componente: BalancoPatrimonial },
   dre: { rotulo: "DRE", componente: DRE },
+  dfc: { rotulo: "DFC", componente: Dfc },
   analise: { rotulo: "Análise", componente: Analise },
   comparacao: { rotulo: "Comparação", componente: Comparacao },
 };

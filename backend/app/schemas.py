@@ -78,6 +78,25 @@ class DREReport(BaseModel):
     resultado_periodo: float
 
 
+class DFCConta(BaseModel):
+    codigo: str
+    nome: str
+    valor: float
+
+
+class DFCReport(BaseModel):
+    operacionais: list[DFCConta]
+    subtotal_operacionais: float
+    investimentos: list[DFCConta]
+    subtotal_investimentos: float
+    financiamentos: list[DFCConta]
+    subtotal_financiamentos: float
+    variacao_liquida: float
+    saldo_inicial: float
+    saldo_final: float
+    confere: bool
+
+
 class UploadErro(BaseModel):
     linha: int
     motivo: str
