@@ -31,6 +31,15 @@ export function fmt(valor) {
   return formatador.format(arredondar(valor));
 }
 
+// O backend serializa `date` em ISO (AAAA-MM-DD), sem hora. Rearranjo de
+// string, não Date: um Date construído a partir de "AAAA-MM-DD" é interpretado
+// em UTC, e formatá-lo no fuso local (UTC-3) pode devolver o dia anterior —
+// "2026-09-01" viraria 31/08. Não usar em <input type="date">, que exige ISO.
+export function formatarData(iso) {
+  const [ano, mes, dia] = iso.split("-");
+  return `${dia}/${mes}/${ano}`;
+}
+
 export const MENSAGEM_VAZIO =
   "Sem dados para exibir. Lance ou importe lançamentos para ver o gráfico.";
 
