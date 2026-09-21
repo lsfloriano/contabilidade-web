@@ -94,3 +94,27 @@ def test_endpoint_dre_com_intervalo(client):
     assert corpo["total_receitas"] == 4000.0
     assert corpo["total_despesas"] == 500.0
     assert corpo["resultado_periodo"] == 3500.0
+
+
+def _forma_dre(dre):
+    return [c["codigo"] for c in dre["receitas"]], [c["codigo"] for c in dre["despesas"]]
+
+
+def test_montar_dre_produz_mesma_forma_com_ou_sem_lancamentos_no_intervalo(db_session):
+    # Mesma invariante do BP: Comparacao.jsx pareia as duas DREs por índice.
+    # O intervalo antes do primeiro lançamento cai no ramo `lanc_df.empty` de
+    # calcular_balancete, que precisa devolver a mesma lista de contas mesmo
+    # sem nenhuma linha para agrupar.
+    db_session.add_all([
+        Lancamento(data=date(2026, 1, 31), conta_debito="1.1.03", conta_credito="3.1.01", valor=Decimal("1000.00")),
+        Lancamento(data=date(2026, 2, 10), conta_debito="1.1.03", conta_credito="3.1.01", valor=Decimal("3000.00")),
+        Lancamento(data=date(2026, 2, 20), conta_debito="4.1.01", conta_credito="1.1.04", valor=Decimal("1200.00")),
+        Lancamento(data=date(2026, 3, 1), conta_debito="4.1.02", conta_credito="1.1.01", valor=Decimal("500.00")),
+    ])
+    db_session.commit()
+
+    dre_antes = montar_dre(db_session, data_inicio=date(2025, 1, 1), data_fim=date(2025, 12, 31))
+    dre_depois = montar_dre(db_session, data_inicio=date(2026, 1, 1), data_fim=date(2099, 12, 31))
+    dre_sem_intervalo = montar_dre(db_session)
+
+    assert _forma_dre(dre_antes) == _forma_dre(dre_depois) == _forma_dre(dre_sem_intervalo)

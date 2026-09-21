@@ -113,3 +113,26 @@ def test_endpoint_bp_com_data_corte(client):
 def test_endpoint_bp_data_corte_invalida_retorna_422(client):
     resposta = client.get("/relatorios/bp?data_corte=31-01-2026")
     assert resposta.status_code == 422
+
+
+def _forma_bp(bp):
+    return [(secao["grupo"], [c["codigo"] for c in secao["contas"]]) for secao in bp["ativo"] + bp["passivo_pl"]]
+
+
+def test_montar_bp_produz_mesma_forma_com_ou_sem_lancamentos_no_corte(db_session):
+    # Comparacao.jsx pareia os dois períodos por índice, não por código: a
+    # mesma sequência de seções e contas tem de sair sempre, inclusive quando
+    # `data_corte` cai antes de qualquer lançamento — o único caso em que
+    # calcular_balancete percorre o ramo `lanc_df.empty`.
+    db_session.add_all([
+        Lancamento(data=date(2026, 1, 2), conta_debito="1.1.01", conta_credito="2.3.01", valor=Decimal("5000.00")),
+        Lancamento(data=date(2026, 2, 5), conta_debito="1.2.01", conta_credito="1.1.01", valor=Decimal("1000.00")),
+        Lancamento(data=date(2026, 3, 10), conta_debito="1.1.04", conta_credito="2.1.01", valor=Decimal("2000.00")),
+    ])
+    db_session.commit()
+
+    bp_antes = montar_bp(db_session, data_corte=date(2025, 12, 31))
+    bp_depois = montar_bp(db_session, data_corte=date(2099, 12, 31))
+    bp_sem_corte = montar_bp(db_session)
+
+    assert _forma_bp(bp_antes) == _forma_bp(bp_depois) == _forma_bp(bp_sem_corte)
