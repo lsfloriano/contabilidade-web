@@ -71,7 +71,7 @@ function linhasDasSecoes(secoes1, secoes2) {
         chave: `${secao1.grupo}-${conta1.codigo}`,
         rotulo: conta1.nome,
         valor1: conta1.saldo,
-        valor2: secao2.contas[j].saldo,
+        valor2: secao2.contas[j]?.saldo ?? 0,
       });
     });
     linhas.push({
@@ -90,7 +90,7 @@ function linhasDasContas(contas1, contas2, prefixo) {
     chave: `${prefixo}-${conta1.codigo}`,
     rotulo: conta1.nome,
     valor1: conta1.valor,
-    valor2: contas2[i].valor,
+    valor2: contas2[i]?.valor ?? 0,
   }));
 }
 
