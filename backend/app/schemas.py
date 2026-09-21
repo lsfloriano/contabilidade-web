@@ -26,6 +26,14 @@ class LancamentoOut(LancamentoCreate):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    estorno_de: Optional[int] = None
+
+
+class LancamentoEstornoCreate(BaseModel):
+    # O estorno não escolhe contas nem valor: os três saem invertidos/iguais
+    # do lançamento original. Só data e histórico são do usuário.
+    data: date
+    historico: Optional[str] = None
 
 
 class BalanceteRow(BaseModel):

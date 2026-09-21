@@ -46,5 +46,10 @@ class Lancamento(Base):
     valor = Column(Numeric(12, 2), nullable=False)
     historico = Column(String, nullable=True)
 
+    # Só o estorno tem este campo preenchido, apontando para o lançamento que
+    # ele reverte. O original não ganha flag nenhuma: "foi estornado?" se
+    # deriva de existir outro lançamento com estorno_de == id dele.
+    estorno_de = Column(Integer, ForeignKey("lancamentos.id"), nullable=True)
+
     debito = relationship("ContaContabil", foreign_keys=[conta_debito])
     credito = relationship("ContaContabil", foreign_keys=[conta_credito])
