@@ -7,6 +7,7 @@ import {
   fmt,
   MENSAGEM_VAZIO,
   caminhoBarra,
+  arredondar,
 } from "./graficos-comuns";
 
 const VIEW_W = 720;
@@ -42,11 +43,13 @@ export default function GraficoDRE({ dre }) {
     inicio: 0,
     fim: dre.total_receitas,
     valor: dre.total_receitas,
-    positivo: dre.total_receitas >= 0,
+    positivo: arredondar(dre.total_receitas) >= 0,
   });
 
   let acumulado = dre.total_receitas;
-  const despesasNegativas = dre.despesas.filter((despesa) => despesa.valor < 0);
+  const despesasNegativas = dre.despesas.filter(
+    (despesa) => arredondar(despesa.valor) < 0
+  );
   dre.despesas
     .filter((despesa) => despesa.valor > 0)
     .forEach((despesa) => {
@@ -65,7 +68,7 @@ export default function GraficoDRE({ dre }) {
     inicio: 0,
     fim: dre.resultado_periodo,
     valor: dre.resultado_periodo,
-    positivo: dre.resultado_periodo >= 0,
+    positivo: arredondar(dre.resultado_periodo) >= 0,
   });
 
   const valores = passos

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getDRE } from "../api";
 import GraficoDRE from "../components/GraficoDRE";
-import { fmt, classeValor } from "../components/graficos-comuns";
+import { fmt, classeValor, arredondar } from "../components/graficos-comuns";
 
 export default function DRE() {
   const [dre, setDre] = useState(null);
@@ -61,7 +61,7 @@ export default function DRE() {
       <p className="razao-fechamento">
         <span>
           Resultado do período
-          {dre.resultado_periodo >= 0 ? " (lucro)" : " (prejuízo)"}
+          {arredondar(dre.resultado_periodo) >= 0 ? " (lucro)" : " (prejuízo)"}
         </span>
         <span className={classeValor(dre.resultado_periodo)}>
           {fmt(dre.resultado_periodo)}

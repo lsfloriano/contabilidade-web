@@ -7,6 +7,7 @@ import {
   fmt,
   MENSAGEM_VAZIO,
   caminhoBarra,
+  arredondar,
 } from "./graficos-comuns";
 
 const VIEW_W = 420;
@@ -78,7 +79,7 @@ export default function GraficoBalanco({ bp }) {
     0
   );
 
-  const negativas = secoes.filter((secao) => secao.subtotal < 0);
+  const negativas = secoes.filter((secao) => arredondar(secao.subtotal) < 0);
   const aviso =
     negativas.length > 0
       ? `${negativas

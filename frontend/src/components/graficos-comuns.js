@@ -22,7 +22,7 @@ const formatador = new Intl.NumberFormat("pt-BR", {
 // backend não arredonda (soma floats crus), então um resíduo de -1e-7 chegava
 // como "-0,00" em vermelho. Math.round(-0.5) é -0 em JS, daí a normalização
 // explícita do zero negativo — sem ela, 0 imprimiria com sinal de menos.
-function arredondar(valor) {
+export function arredondar(valor) {
   const n = Math.round(valor * 100) / 100;
   return n === 0 ? 0 : n;
 }
