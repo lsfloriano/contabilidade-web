@@ -253,6 +253,103 @@ def montar_dre_planilha(
     return pd.DataFrame(linhas, columns=["Tipo", "Conta", "Valor"])
 
 
+# Método direto: a DFC nasce dos lançamentos, não de ajustes sobre o resultado.
+# Caixa e Bancos são as duas pontas que definem o que é movimento de caixa —
+# nunca aparecem como linha do relatório, só como o lado que faz o lançamento
+# ser (ou não) fluxo de caixa.
+CONTAS_CAIXA = {"1.1.01", "1.1.02"}  # Caixa, Bancos
+# As duas exceções à regra por grupo: estão em Passivo Circulante / Passivo
+# Não Circulante, mas são financiamento, não operacional.
+CODIGOS_FINANCIAMENTO_DFC = {"2.1.02", "2.2.01"}  # Empréstimos CP, Empréstimos LP
+
+
+def _categoria_dfc(conta: dict) -> str:
+    """Atividade da contraparte de um movimento de caixa.
+
+    Regra por `grupo`, com as duas exceções por `codigo` testadas primeiro.
+    Despesas Financeiras cai em "operacional" pelo ramo final: juros como
+    atividade operacional é a prática brasileira usual.
+    """
+    if conta["codigo"] in CODIGOS_FINANCIAMENTO_DFC:
+        return "financiamento"
+    if conta["grupo"] == Grupo.ativo_nao_circulante.value:
+        return "investimento"
+    if conta["grupo"] == Grupo.patrimonio_liquido.value:
+        return "financiamento"
+    return "operacional"
+
+
+def montar_dfc(db: Session) -> dict:
+    # Itera os lançamentos brutos em vez de passar por calcular_balancete: o
+    # balancete agrupa por conta sem preservar qual lado é débito e qual é
+    # crédito por lançamento, e aqui isso é a informação principal.
+    lancamentos = db.query(Lancamento).all()
+    contas = {c["codigo"]: c for c in _contas_dataframe(db).to_dict("records")}
+
+    valores = {"operacional": {}, "investimento": {}, "financiamento": {}}
+    for l in lancamentos:
+        debito_e_caixa = l.conta_debito in CONTAS_CAIXA
+        credito_e_caixa = l.conta_credito in CONTAS_CAIXA
+        if debito_e_caixa and credito_e_caixa:
+            continue  # transferência interna, não é fluxo de caixa
+        if debito_e_caixa:
+            contraparte = contas[l.conta_credito]
+            valor = float(l.valor)  # entrada
+        elif credito_e_caixa:
+            contraparte = contas[l.conta_debito]
+            valor = -float(l.valor)  # saída
+        else:
+            continue  # nenhum lado é caixa/bancos, ainda não é fluxo de caixa
+
+        categoria = _categoria_dfc(contraparte)
+        codigo = contraparte["codigo"]
+        acumulado = valores[categoria].setdefault(
+            codigo, {"nome": contraparte["nome"], "valor": 0.0}
+        )
+        acumulado["valor"] += valor
+
+    def linhas(categoria):
+        return [
+            {"codigo": codigo, "nome": dado["nome"], "valor": dado["valor"]}
+            for codigo, dado in valores[categoria].items()
+        ]
+
+    operacionais = linhas("operacional")
+    investimentos = linhas("investimento")
+    financiamentos = linhas("financiamento")
+
+    subtotal_operacionais = sum(l["valor"] for l in operacionais)
+    subtotal_investimentos = sum(l["valor"] for l in investimentos)
+    subtotal_financiamentos = sum(l["valor"] for l in financiamentos)
+    variacao_liquida = subtotal_operacionais + subtotal_investimentos + subtotal_financiamentos
+
+    # Saldo inicial é sempre 0: o app acumula desde o primeiro lançamento,
+    # mesma convenção do BP e da DRE.
+    saldo_inicial = 0.0
+    saldo_final = saldo_inicial + variacao_liquida
+
+    # Segundo caminho de cálculo, independente do de cima: é o que faz de
+    # `confere` uma prova por partida dobrada, e não uma afirmação.
+    balancete = calcular_balancete(db)
+    saldo_caixa_bancos = sum(c["saldo"] for c in balancete if c["codigo"] in CONTAS_CAIXA)
+
+    return {
+        "operacionais": operacionais,
+        "subtotal_operacionais": subtotal_operacionais,
+        "investimentos": investimentos,
+        "subtotal_investimentos": subtotal_investimentos,
+        "financiamentos": financiamentos,
+        "subtotal_financiamentos": subtotal_financiamentos,
+        "variacao_liquida": variacao_liquida,
+        "saldo_inicial": saldo_inicial,
+        "saldo_final": saldo_final,
+        # Mesma tolerância de 0.01 que já governa `balanceado` no BP — não é
+        # um número novo, é o mesmo padrão de "ponto flutuante cru" do resto
+        # do app aplicado aqui.
+        "confere": abs(saldo_final - saldo_caixa_bancos) < 0.01,
+    }
+
+
 CODIGO_CAIXA = "1.1.01"
 CODIGO_BANCOS = "1.1.02"
 CODIGO_ESTOQUES = "1.1.04"
