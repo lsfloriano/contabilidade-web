@@ -73,3 +73,24 @@ def test_endpoint_dre(client):
     assert resposta.status_code == 200
     corpo = resposta.json()
     assert corpo["resultado_periodo"] == 500.0
+
+
+def test_endpoint_dre_com_intervalo(client):
+    client.post("/lancamentos", json={"data": "2026-01-31", "conta_debito": "1.1.03", "conta_credito": "3.1.01", "valor": 1000.0})
+    client.post("/lancamentos", json={"data": "2026-02-10", "conta_debito": "1.1.03", "conta_credito": "3.1.01", "valor": 3000.0})
+    client.post("/lancamentos", json={"data": "2026-03-01", "conta_debito": "4.1.02", "conta_credito": "1.1.01", "valor": 500.0})
+
+    resposta = client.get("/relatorios/dre?data_inicio=2026-02-01&data_fim=2026-02-28")
+    assert resposta.status_code == 200
+    corpo = resposta.json()
+    assert corpo["total_receitas"] == 3000.0
+    assert corpo["total_despesas"] == 0.0
+    assert corpo["resultado_periodo"] == 3000.0
+
+    # Sem os parâmetros, o mesmo endpoint continua acumulando tudo.
+    resposta = client.get("/relatorios/dre")
+    assert resposta.status_code == 200
+    corpo = resposta.json()
+    assert corpo["total_receitas"] == 4000.0
+    assert corpo["total_despesas"] == 500.0
+    assert corpo["resultado_periodo"] == 3500.0

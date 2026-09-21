@@ -85,3 +85,31 @@ def test_endpoint_bp(client):
     corpo = resposta.json()
     assert corpo["balanceado"] is True
     assert corpo["total_ativo"] == 500.0
+
+
+def test_endpoint_bp_com_data_corte(client):
+    client.post(
+        "/lancamentos",
+        json={"data": "2026-01-02", "conta_debito": "1.1.01", "conta_credito": "2.3.01", "valor": 500.0},
+    )
+    client.post(
+        "/lancamentos",
+        json={"data": "2026-02-10", "conta_debito": "1.1.01", "conta_credito": "2.3.01", "valor": 300.0},
+    )
+
+    resposta = client.get("/relatorios/bp?data_corte=2026-01-31")
+    assert resposta.status_code == 200
+    corpo = resposta.json()
+    assert corpo["total_ativo"] == 500.0
+    assert corpo["total_passivo_pl"] == 500.0
+    assert corpo["balanceado"] is True
+
+    # Sem o parâmetro, o mesmo endpoint continua somando a base inteira.
+    resposta = client.get("/relatorios/bp")
+    assert resposta.status_code == 200
+    assert resposta.json()["total_ativo"] == 800.0
+
+
+def test_endpoint_bp_data_corte_invalida_retorna_422(client):
+    resposta = client.get("/relatorios/bp?data_corte=31-01-2026")
+    assert resposta.status_code == 422
