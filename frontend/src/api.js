@@ -67,6 +67,10 @@ export function getDRE(dataInicio, dataFim) {
   ).then(handleResponse);
 }
 
+export function getDFC() {
+  return fetch(`${API_BASE}/relatorios/dfc`).then(handleResponse);
+}
+
 export function getAnalise() {
   return fetch(`${API_BASE}/relatorios/analise`).then(handleResponse);
 }
