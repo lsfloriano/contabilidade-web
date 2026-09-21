@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getContas, getLancamentos, criarLancamento, uploadLancamentos } from "../api";
-import { fmt, classeValor } from "../components/graficos-comuns";
+import { fmt, classeValor, formatarData } from "../components/graficos-comuns";
 
 const LANCAMENTO_VAZIO = {
   data: "",
@@ -155,7 +155,7 @@ export default function Lancamentos() {
           <tbody>
             {lancamentos.map((lancamento) => (
               <tr key={lancamento.id}>
-                <td>{lancamento.data}</td>
+                <td>{formatarData(lancamento.data)}</td>
                 <td>{lancamento.conta_debito}</td>
                 <td>{lancamento.conta_credito}</td>
                 <td className={classeValor(lancamento.valor)}>

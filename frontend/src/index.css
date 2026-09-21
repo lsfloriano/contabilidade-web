@@ -132,6 +132,15 @@ thead th {
   border-top: 2px solid var(--tinta);
 }
 
+/* Fecha uma TABELA (não um <p>, como .razao-fechamento — display: flex é
+   incompatível com <tr>/<td>). Mesmo peso de fio duplo, composta com
+   .razao-subtotal para o fio simples de cima: juntas dão a mesma leitura de
+   "total final" que .razao-fechamento dá fora de tabela. Uso: uma única linha
+   no fim do corpo, como o Total do Balancete. */
+.razao-total-tabela > td {
+  border-bottom: 3px double var(--tinta);
+}
+
 /* Total final fora de tabela: fio simples acima, fio duplo abaixo. */
 .razao-fechamento {
   display: flex;
