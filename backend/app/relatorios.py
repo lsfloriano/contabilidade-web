@@ -60,6 +60,22 @@ def calcular_balancete(db: Session) -> list[dict]:
     return resultado
 
 
+def montar_balancete(db: Session) -> dict:
+    # Toda linha de calcular_balancete fica igual — isso aqui só soma as duas
+    # colunas de dinheiro. Por partida dobrada, cada lançamento credita uma
+    # conta e debita outra pelo mesmo valor, então as somas SEMPRE fecham
+    # iguais; é a prova de que o balancete existe para mostrar. O frontend
+    # exibe a diferença via classeValor — se um dia vier diferente de zero,
+    # é bug de dados, não de arredondamento (ambas somam floats crus, igual
+    # ao resto do app).
+    linhas = calcular_balancete(db)
+    return {
+        "linhas": linhas,
+        "total_debito": sum(linha["total_debito"] for linha in linhas),
+        "total_credito": sum(linha["total_credito"] for linha in linhas),
+    }
+
+
 GRUPOS_ATIVO = [Grupo.ativo_circulante.value, Grupo.ativo_nao_circulante.value]
 GRUPOS_PASSIVO_PL = [Grupo.passivo_circulante.value, Grupo.passivo_nao_circulante.value, Grupo.patrimonio_liquido.value]
 

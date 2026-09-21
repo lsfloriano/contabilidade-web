@@ -38,6 +38,12 @@ class BalanceteRow(BaseModel):
     saldo: float
 
 
+class BalanceteReport(BaseModel):
+    linhas: list[BalanceteRow]
+    total_debito: float
+    total_credito: float
+
+
 class BPConta(BaseModel):
     codigo: str
     nome: str

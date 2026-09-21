@@ -3,19 +3,21 @@ import { getBalancete } from "../api";
 import { fmt, classeValor } from "../components/graficos-comuns";
 
 export default function Balancete() {
-  const [linhas, setLinhas] = useState([]);
+  const [balancete, setBalancete] = useState(null);
   const [erro, setErro] = useState(null);
 
   useEffect(() => {
     getBalancete()
-      .then(setLinhas)
+      .then(setBalancete)
       .catch((e) => setErro(e.message));
   }, []);
+
+  if (erro) return <p className="erro">{erro}</p>;
+  if (!balancete) return <p>Carregando...</p>;
 
   return (
     <section>
       <h2>Balancete</h2>
-      {erro && <p className="erro">{erro}</p>}
       <div className="tabela-rolagem">
         <table>
           <thead>
@@ -28,7 +30,7 @@ export default function Balancete() {
             </tr>
           </thead>
           <tbody>
-            {linhas.map((linha) => (
+            {balancete.linhas.map((linha) => (
               <tr key={linha.codigo}>
                 <td>
                   {linha.codigo} - {linha.nome}
@@ -43,6 +45,22 @@ export default function Balancete() {
                 <td className={classeValor(linha.saldo)}>{fmt(linha.saldo)}</td>
               </tr>
             ))}
+            <tr className="razao-subtotal razao-total-tabela">
+              <td colSpan={2}>Total</td>
+              <td className={classeValor(balancete.total_debito)}>
+                {fmt(balancete.total_debito)}
+              </td>
+              <td className={classeValor(balancete.total_credito)}>
+                {fmt(balancete.total_credito)}
+              </td>
+              <td
+                className={classeValor(
+                  balancete.total_debito - balancete.total_credito
+                )}
+              >
+                {fmt(balancete.total_debito - balancete.total_credito)}
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
