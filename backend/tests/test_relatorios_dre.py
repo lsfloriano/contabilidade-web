@@ -1,5 +1,8 @@
 from decimal import Decimal
 from datetime import date
+from io import BytesIO
+
+import pandas as pd
 
 from app.models import Lancamento
 from app.relatorios import montar_dre
@@ -118,3 +121,18 @@ def test_montar_dre_produz_mesma_forma_com_ou_sem_lancamentos_no_intervalo(db_se
     dre_sem_intervalo = montar_dre(db_session)
 
     assert _forma_dre(dre_antes) == _forma_dre(dre_depois) == _forma_dre(dre_sem_intervalo)
+
+
+def test_endpoint_exportar_dre(client, db_session):
+    db_session.add(Lancamento(data=date(2026, 1, 5), conta_debito="1.1.03", conta_credito="3.1.01", valor=Decimal("2000.00")))
+    db_session.commit()
+
+    resposta = client.get("/relatorios/dre/exportar")
+    assert resposta.status_code == 200
+
+    df = pd.read_excel(BytesIO(resposta.content), sheet_name="DRE")
+    total_receitas = df[df["Conta"] == "Total de receitas"].iloc[0]
+    assert total_receitas["Valor"] == 2000.00
+
+    resultado = df[df["Conta"] == "Resultado do período"].iloc[0]
+    assert resultado["Valor"] == 2000.00

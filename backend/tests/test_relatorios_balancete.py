@@ -1,5 +1,8 @@
 from decimal import Decimal
 from datetime import date
+from io import BytesIO
+
+import pandas as pd
 
 from app.models import Lancamento
 from app.relatorios import calcular_balancete, montar_balancete
@@ -135,3 +138,20 @@ def test_endpoint_balancete(client, db_session):
     assert caixa["saldo"] == 1000.00
     assert corpo["total_debito"] == 1000.00
     assert corpo["total_credito"] == 1000.00
+
+
+def test_endpoint_exportar_balancete(client, db_session):
+    db_session.add(Lancamento(data=date(2026, 1, 5), conta_debito="1.1.01", conta_credito="2.3.01", valor=Decimal("1000.00")))
+    db_session.commit()
+
+    resposta = client.get("/relatorios/balancete/exportar")
+    assert resposta.status_code == 200
+    assert resposta.headers["content-type"] == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+    df = pd.read_excel(BytesIO(resposta.content), sheet_name="Balancete")
+    caixa = df[df["Conta"].str.startswith("1.1.01")].iloc[0]
+    assert caixa["Saldo"] == 1000.00
+
+    total = df[df["Conta"] == "Total"].iloc[0]
+    assert total["Total débito"] == 1000.00
+    assert total["Total crédito"] == 1000.00

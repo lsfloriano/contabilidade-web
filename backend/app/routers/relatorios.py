@@ -1,13 +1,49 @@
 from datetime import date
+from io import BytesIO
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.relatorios import montar_balancete, montar_bp, montar_dre, montar_analise
+from app.relatorios import (
+    montar_balancete,
+    montar_balancete_planilha,
+    montar_bp,
+    montar_bp_planilha,
+    montar_dre,
+    montar_dre_planilha,
+    montar_analise,
+)
 from app.schemas import BalanceteReport, BPReport, DREReport, AnaliseReport
 
 router = APIRouter(prefix="/relatorios")
+
+
+def _xlsx_resposta(df, nome_aba: str, nome_arquivo: str) -> StreamingResponse:
+    buffer = BytesIO()
+    df.to_excel(buffer, sheet_name=nome_aba, index=False, engine="openpyxl")
+    buffer.seek(0)
+    return StreamingResponse(
+        buffer,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=" + nome_arquivo},
+    )
+
+
+@router.get("/balancete/exportar")
+def exportar_balancete(db: Session = Depends(get_db)):
+    return _xlsx_resposta(montar_balancete_planilha(db), "Balancete", "balancete.xlsx")
+
+
+@router.get("/bp/exportar")
+def exportar_bp(db: Session = Depends(get_db)):
+    return _xlsx_resposta(montar_bp_planilha(db), "Balanço Patrimonial", "balanco_patrimonial.xlsx")
+
+
+@router.get("/dre/exportar")
+def exportar_dre(db: Session = Depends(get_db)):
+    return _xlsx_resposta(montar_dre_planilha(db), "DRE", "dre.xlsx")
 
 
 @router.get("/balancete", response_model=BalanceteReport)
