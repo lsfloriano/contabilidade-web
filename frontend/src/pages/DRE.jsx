@@ -19,6 +19,9 @@ export default function DRE() {
   return (
     <section>
       <h2>Demonstração de Resultado do Exercício</h2>
+      <a href="http://localhost:8000/relatorios/dre/exportar" className="botao" download>
+        Exportar
+      </a>
 
       <GraficoDRE dre={dre} />
 

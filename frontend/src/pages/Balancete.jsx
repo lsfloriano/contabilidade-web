@@ -18,6 +18,9 @@ export default function Balancete() {
   return (
     <section>
       <h2>Balancete</h2>
+      <a href="http://localhost:8000/relatorios/balancete/exportar" className="botao" download>
+        Exportar
+      </a>
       <div className="tabela-rolagem">
         <table>
           <thead>

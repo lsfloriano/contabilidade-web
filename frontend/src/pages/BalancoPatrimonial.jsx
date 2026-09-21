@@ -54,6 +54,9 @@ export default function BalancoPatrimonial() {
   return (
     <section>
       <h2>Balanço Patrimonial</h2>
+      <a href="http://localhost:8000/relatorios/bp/exportar" className="botao" download>
+        Exportar
+      </a>
       {!bp.balanceado && (
         <p className="erro">
           Atenção: Ativo ({fmt(bp.total_ativo)}) não bate com Passivo + PL (
