@@ -1,5 +1,8 @@
 from decimal import Decimal
 from datetime import date
+from io import BytesIO
+
+import pandas as pd
 
 from app.models import Lancamento
 from app.relatorios import montar_bp
@@ -136,3 +139,21 @@ def test_montar_bp_produz_mesma_forma_com_ou_sem_lancamentos_no_corte(db_session
     bp_sem_corte = montar_bp(db_session)
 
     assert _forma_bp(bp_antes) == _forma_bp(bp_depois) == _forma_bp(bp_sem_corte)
+
+
+def test_endpoint_exportar_bp(client, db_session):
+    db_session.add(Lancamento(data=date(2026, 1, 5), conta_debito="1.1.01", conta_credito="2.3.01", valor=Decimal("5000.00")))
+    db_session.commit()
+
+    resposta = client.get("/relatorios/bp/exportar")
+    assert resposta.status_code == 200
+
+    df = pd.read_excel(BytesIO(resposta.content), sheet_name="Balanço Patrimonial")
+    caixa = df[(df["Lado"] == "Ativo") & (df["Conta"] == "Caixa")].iloc[0]
+    assert caixa["Saldo"] == 5000.00
+
+    total_ativo = df[(df["Lado"] == "Ativo") & (df["Conta"] == "Total")].iloc[0]
+    assert total_ativo["Saldo"] == 5000.00
+
+    total_pl = df[(df["Lado"] == "Passivo + Patrimônio Líquido") & (df["Conta"] == "Total")].iloc[0]
+    assert total_pl["Saldo"] == 5000.00

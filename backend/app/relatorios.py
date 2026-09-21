@@ -1,4 +1,5 @@
 from datetime import date
+from io import BytesIO
 
 import pandas as pd
 from sqlalchemy.orm import Session
@@ -98,6 +99,33 @@ def montar_balancete(db: Session) -> dict:
     }
 
 
+def montar_balancete_planilha(db: Session) -> pd.DataFrame:
+    # Espelha a tabela da página: "código - nome" numa coluna só, mais a
+    # linha de Total que já existe na tela (grupo em branco, saldo é a
+    # diferença entre os dois totais, igual ao que Balancete.jsx calcula).
+    balancete = montar_balancete(db)
+    linhas = [
+        {
+            "Conta": f"{linha['codigo']} - {linha['nome']}",
+            "Grupo": linha["grupo"],
+            "Total débito": linha["total_debito"],
+            "Total crédito": linha["total_credito"],
+            "Saldo": linha["saldo"],
+        }
+        for linha in balancete["linhas"]
+    ]
+    linhas.append({
+        "Conta": "Total",
+        "Grupo": "",
+        "Total débito": balancete["total_debito"],
+        "Total crédito": balancete["total_credito"],
+        "Saldo": balancete["total_debito"] - balancete["total_credito"],
+    })
+    return pd.DataFrame(
+        linhas, columns=["Conta", "Grupo", "Total débito", "Total crédito", "Saldo"]
+    )
+
+
 GRUPOS_ATIVO = [Grupo.ativo_circulante.value, Grupo.ativo_nao_circulante.value]
 GRUPOS_PASSIVO_PL = [Grupo.passivo_circulante.value, Grupo.passivo_nao_circulante.value, Grupo.patrimonio_liquido.value]
 
@@ -149,6 +177,35 @@ def montar_bp(db: Session, data_corte: date | None = None) -> dict:
     }
 
 
+def montar_bp_planilha(db: Session, data_corte: date | None = None) -> pd.DataFrame:
+    # Formato longo (uma linha por conta, mais subtotal e total), não um
+    # espelho visual das duas colunas da tela: uma planilha achatada é o que
+    # se abre e já dá pra somar/dinamizar, ao contrário de tentar recriar a
+    # conta T num layout de duas colunas dentro de uma aba só.
+    bp = montar_bp(db, data_corte=data_corte)
+    linhas = []
+    for lado, secoes, total in (
+        ("Ativo", bp["ativo"], bp["total_ativo"]),
+        ("Passivo + Patrimônio Líquido", bp["passivo_pl"], bp["total_passivo_pl"]),
+    ):
+        for secao in secoes:
+            for conta in secao["contas"]:
+                linhas.append({
+                    "Lado": lado,
+                    "Grupo": secao["grupo"],
+                    "Conta": conta["nome"],
+                    "Saldo": conta["saldo"],
+                })
+            linhas.append({
+                "Lado": lado,
+                "Grupo": secao["grupo"],
+                "Conta": "Subtotal",
+                "Saldo": secao["subtotal"],
+            })
+        linhas.append({"Lado": lado, "Grupo": "", "Conta": "Total", "Saldo": total})
+    return pd.DataFrame(linhas, columns=["Lado", "Grupo", "Conta", "Saldo"])
+
+
 def montar_dre(
     db: Session,
     data_inicio: date | None = None,
@@ -172,6 +229,28 @@ def montar_dre(
         "total_despesas": total_despesas,
         "resultado_periodo": total_receitas - total_despesas,
     }
+
+
+def montar_dre_planilha(
+    db: Session,
+    data_inicio: date | None = None,
+    data_fim: date | None = None,
+) -> pd.DataFrame:
+    dre = montar_dre(db, data_inicio=data_inicio, data_fim=data_fim)
+    linhas = []
+    for tipo, contas, total, rotulo_total in (
+        ("Receita", dre["receitas"], dre["total_receitas"], "Total de receitas"),
+        ("Despesa", dre["despesas"], dre["total_despesas"], "Total de despesas"),
+    ):
+        for conta in contas:
+            linhas.append({"Tipo": tipo, "Conta": conta["nome"], "Valor": conta["valor"]})
+        linhas.append({"Tipo": tipo, "Conta": rotulo_total, "Valor": total})
+    linhas.append({
+        "Tipo": "Resultado",
+        "Conta": "Resultado do período",
+        "Valor": dre["resultado_periodo"],
+    })
+    return pd.DataFrame(linhas, columns=["Tipo", "Conta", "Valor"])
 
 
 CODIGO_CAIXA = "1.1.01"
