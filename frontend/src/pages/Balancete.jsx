@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { getBalancete } from "../api";
+import { getBalancete, getBalancetePlanilha, salvarArquivo } from "../api";
 import { fmt, classeValor } from "../components/graficos-comuns";
 
 export default function Balancete() {
   const [balancete, setBalancete] = useState(null);
   const [erro, setErro] = useState(null);
+  const [erroExportar, setErroExportar] = useState(null);
 
   useEffect(() => {
     getBalancete()
@@ -12,15 +13,25 @@ export default function Balancete() {
       .catch((e) => setErro(e.message));
   }, []);
 
+  async function aoExportar() {
+    setErroExportar(null);
+    try {
+      salvarArquivo(await getBalancetePlanilha(), "balancete.xlsx");
+    } catch (e) {
+      setErroExportar(e.message);
+    }
+  }
+
   if (erro) return <p className="erro">{erro}</p>;
   if (!balancete) return <p>Carregando...</p>;
 
   return (
     <section>
       <h2>Balancete</h2>
-      <a href="http://localhost:8000/relatorios/balancete/exportar" className="botao" download>
+      <button type="button" className="botao" onClick={aoExportar}>
         Exportar
-      </a>
+      </button>
+      {erroExportar && <p className="erro">{erroExportar}</p>}
       <div className="tabela-rolagem">
         <table>
           <thead>

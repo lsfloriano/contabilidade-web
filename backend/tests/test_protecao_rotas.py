@@ -55,9 +55,9 @@ def test_lancamentos_com_token_expirado_devolve_401(client_sem_token):
 
 
 # As oito rotas de /relatorios, uma a uma: nenhuma escapa da exigência de
-# token. As três de exportação entram na mesma lista — hoje o frontend as
-# abre por <a href download>, que não carrega header; ver a questão aberta
-# registrada no plano.
+# token. As três de exportação entram na mesma lista — o frontend as busca
+# por fetch com o header Authorization (Tarefa 9), não mais por <a href
+# download>.
 ROTAS_DE_RELATORIO = [
     "/relatorios/balancete",
     "/relatorios/bp",

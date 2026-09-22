@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { getDRE } from "../api";
+import { getDRE, getDREPlanilha, salvarArquivo } from "../api";
 import GraficoDRE from "../components/GraficoDRE";
 import { fmt, classeValor, arredondar } from "../components/graficos-comuns";
 
 export default function DRE() {
   const [dre, setDre] = useState(null);
   const [erro, setErro] = useState(null);
+  const [erroExportar, setErroExportar] = useState(null);
 
   useEffect(() => {
     getDRE()
@@ -13,15 +14,25 @@ export default function DRE() {
       .catch((e) => setErro(e.message));
   }, []);
 
+  async function aoExportar() {
+    setErroExportar(null);
+    try {
+      salvarArquivo(await getDREPlanilha(), "dre.xlsx");
+    } catch (e) {
+      setErroExportar(e.message);
+    }
+  }
+
   if (erro) return <p className="erro">{erro}</p>;
   if (!dre) return <p>Carregando...</p>;
 
   return (
     <section>
       <h2>Demonstração de Resultado do Exercício</h2>
-      <a href="http://localhost:8000/relatorios/dre/exportar" className="botao" download>
+      <button type="button" className="botao" onClick={aoExportar}>
         Exportar
-      </a>
+      </button>
+      {erroExportar && <p className="erro">{erroExportar}</p>}
 
       <GraficoDRE dre={dre} />
 

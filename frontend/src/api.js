@@ -155,3 +155,59 @@ export function getDFC() {
 export function getAnalise() {
   return fetch(`${API_BASE}/relatorios/analise`, { headers: cabecalhos() }).then(handleResponse);
 }
+
+// As três rotas de exportação devolvem xlsx binário; handleResponse não
+// serve para elas, porque termina sempre em resposta.json(). O corpo de
+// ERRO dessas rotas, porém, continua sendo o JSON {"detail": ...} do
+// FastAPI — então o caminho de erro aqui é o mesmo de handleResponse,
+// repetido de propósito, e só o caminho de sucesso muda para .blob().
+async function handleResponseArquivo(resposta) {
+  if (resposta.status === 401) {
+    limparToken();
+    window.location.reload();
+    throw new Error("Sessão expirada");
+  }
+  if (!resposta.ok) {
+    const corpo = await resposta.json().catch(() => ({}));
+    const detalhe = corpo.detail;
+    const mensagem = Array.isArray(detalhe)
+      ? detalhe.map((erro) => `${(erro.loc || []).slice(1).join(".")}: ${erro.msg}`).join("; ")
+      : detalhe;
+    throw new Error(mensagem || `Erro ${resposta.status}`);
+  }
+  return resposta.blob();
+}
+
+// Salvar o blob é o preço de buscar o arquivo por fetch: como a requisição
+// não é mais uma navegação do browser, o download tem de ser disparado na
+// mão. Âncora sintética, clique programático e revoke logo depois — sem o
+// revoke, cada exportação deixa o xlsx inteiro preso na memória da aba até
+// o próximo reload.
+export function salvarArquivo(blob, nomeArquivo) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = nomeArquivo;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+export function getBalancetePlanilha() {
+  return fetch(`${API_BASE}/relatorios/balancete/exportar`, {
+    headers: cabecalhos(),
+  }).then(handleResponseArquivo);
+}
+
+export function getBPPlanilha() {
+  return fetch(`${API_BASE}/relatorios/bp/exportar`, {
+    headers: cabecalhos(),
+  }).then(handleResponseArquivo);
+}
+
+export function getDREPlanilha() {
+  return fetch(`${API_BASE}/relatorios/dre/exportar`, {
+    headers: cabecalhos(),
+  }).then(handleResponseArquivo);
+}

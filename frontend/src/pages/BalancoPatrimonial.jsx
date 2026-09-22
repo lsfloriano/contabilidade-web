@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getBP } from "../api";
+import { getBP, getBPPlanilha, salvarArquivo } from "../api";
 import GraficoBalanco from "../components/GraficoBalanco";
 import { fmt, classeValor } from "../components/graficos-comuns";
 
@@ -41,6 +41,7 @@ function Coluna({ titulo, secoes, total }) {
 export default function BalancoPatrimonial() {
   const [bp, setBp] = useState(null);
   const [erro, setErro] = useState(null);
+  const [erroExportar, setErroExportar] = useState(null);
 
   useEffect(() => {
     getBP()
@@ -48,15 +49,25 @@ export default function BalancoPatrimonial() {
       .catch((e) => setErro(e.message));
   }, []);
 
+  async function aoExportar() {
+    setErroExportar(null);
+    try {
+      salvarArquivo(await getBPPlanilha(), "balanco_patrimonial.xlsx");
+    } catch (e) {
+      setErroExportar(e.message);
+    }
+  }
+
   if (erro) return <p className="erro">{erro}</p>;
   if (!bp) return <p>Carregando...</p>;
 
   return (
     <section>
       <h2>Balanço Patrimonial</h2>
-      <a href="http://localhost:8000/relatorios/bp/exportar" className="botao" download>
+      <button type="button" className="botao" onClick={aoExportar}>
         Exportar
-      </a>
+      </button>
+      {erroExportar && <p className="erro">{erroExportar}</p>}
       {!bp.balanceado && (
         <p className="erro">
           Atenção: Ativo ({fmt(bp.total_ativo)}) não bate com Passivo + PL (
