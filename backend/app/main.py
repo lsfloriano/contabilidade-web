@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.db import engine, init_db, SessionLocal
 from app.seed import seed_plano_de_contas, seed_usuarios
-from app.routers import auth, contas, lancamentos, relatorios
+from app.routers import auth, contas, lancamentos, relatorios, usuarios
 
 
 @asynccontextmanager
@@ -39,3 +39,4 @@ app.include_router(auth.router)
 app.include_router(contas.router)
 app.include_router(lancamentos.router)
 app.include_router(relatorios.router)
+app.include_router(usuarios.router)
