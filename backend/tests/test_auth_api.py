@@ -24,6 +24,16 @@ def test_login_de_conta_comum_devolve_papel_comum(client_sem_token):
     assert resposta.json()["papel"] == "comum"
 
 
+def test_login_com_email_em_caixa_diferente_funciona(client_sem_token):
+    resposta = client_sem_token.post(
+        "/login",
+        json={"email": "Admin@Contabilidade.com", "senha": "admin123"},
+    )
+
+    assert resposta.status_code == 200
+    assert resposta.json()["papel"] == "admin"
+
+
 def test_login_com_senha_errada_devolve_401(client_sem_token):
     resposta = client_sem_token.post(
         "/login",

@@ -23,14 +23,19 @@ def criar_usuario(
     db: Session = Depends(get_db),
     _admin: Usuario = Depends(exigir_admin),
 ):
+    # E-mail normalizado para minúsculas antes de checar duplicata e de
+    # gravar: sem isto, "Novo@..." e "novo@..." viram duas contas diferentes,
+    # e a checagem de duplicata abaixo não pegaria a diferença de caixa.
+    email_normalizado = payload.email.strip().lower()
+
     # A coluna já é unique; a checagem aqui é o que transforma o IntegrityError
     # (que viraria 500) numa recusa explicada, no mesmo 422 que o resto do app
     # usa para entrada inválida.
-    if db.query(Usuario).filter_by(email=payload.email).first() is not None:
-        raise HTTPException(status_code=422, detail=f"e-mail {payload.email} já cadastrado")
+    if db.query(Usuario).filter_by(email=email_normalizado).first() is not None:
+        raise HTTPException(status_code=422, detail=f"e-mail {email_normalizado} já cadastrado")
 
     usuario = Usuario(
-        email=payload.email,
+        email=email_normalizado,
         nome=payload.nome,
         senha_hash=hash_senha(payload.senha),
         papel=Papel(payload.papel),

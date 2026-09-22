@@ -11,7 +11,11 @@ router = APIRouter()
 
 @router.post("/login", response_model=LoginResponse)
 def login(payload: LoginRequest, db: Session = Depends(get_db)):
-    usuario = db.query(Usuario).filter_by(email=payload.email).first()
+    # E-mail é normalizado para minúsculas na comparação: o login não pode
+    # depender de quem digitou "Admin@..." ou "admin@..." bater exatamente
+    # com o que foi semeado/cadastrado.
+    email_normalizado = payload.email.strip().lower()
+    usuario = db.query(Usuario).filter_by(email=email_normalizado).first()
     # Mesma mensagem para e-mail inexistente e senha errada: não interessa
     # contar a quem tenta adivinhar qual dos dois ele acertou.
     if usuario is None or not verificar_senha(payload.senha, usuario.senha_hash):

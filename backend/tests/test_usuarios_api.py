@@ -116,6 +116,25 @@ def test_criar_usuario_com_papel_invalido_devolve_422(client_admin):
     assert resposta.status_code == 422
 
 
+def test_criar_usuario_com_senha_curta_devolve_422(client_admin):
+    resposta = client_admin.post(
+        "/usuarios",
+        json={"email": "curta@contabilidade.com", "nome": "Senha Curta", "senha": "123", "papel": "comum"},
+    )
+
+    assert resposta.status_code == 422
+
+
+def test_criar_usuario_com_email_duplicado_em_caixa_diferente_devolve_422(client_admin):
+    resposta = client_admin.post(
+        "/usuarios",
+        json={"email": "Teste1@Contabilidade.com", "nome": "Duplicado", "senha": "x123456", "papel": "comum"},
+    )
+
+    assert resposta.status_code == 422
+    assert resposta.json()["detail"] == "e-mail teste1@contabilidade.com já cadastrado"
+
+
 def test_mudanca_de_papel_vale_na_requisicao_seguinte(client, db_session):
     # O token de `client` é de conta comum e não muda; o papel vem do banco a
     # cada requisição. Promovida a admin, a MESMA credencial passa a entrar
@@ -129,3 +148,18 @@ def test_mudanca_de_papel_vale_na_requisicao_seguinte(client, db_session):
     db_session.commit()
 
     assert client.get("/usuarios").status_code == 200
+
+
+def test_rebaixamento_de_papel_vale_na_requisicao_seguinte(client_admin, db_session):
+    # Espelho do teste acima: o token de `client_admin` é de conta admin e não
+    # muda; rebaixada a comum, a MESMA credencial perde acesso a /usuarios já
+    # na próxima requisição, sem esperar o token expirar.
+    from app.models import Papel, Usuario
+
+    assert client_admin.get("/usuarios").status_code == 200
+
+    usuario = db_session.query(Usuario).filter_by(email="admin@contabilidade.com").first()
+    usuario.papel = Papel.comum
+    db_session.commit()
+
+    assert client_admin.get("/usuarios").status_code == 403

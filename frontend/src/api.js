@@ -59,11 +59,16 @@ export async function login(email, senha) {
 
 // getMe também fica fora de handleResponse: é chamada na abertura da página,
 // e recarregar em resposta a um token velho faria o app piscar antes de cair
-// no login. Quem chama (App.jsx) limpa o token e mostra o login direto.
+// no login. Quem chama (App.jsx) só limpa o token quando o erro é
+// "Sessão inválida" (401 de verdade) — um erro de rede (backend fora do ar)
+// lança outra mensagem, e nesse caso o token guardado não é descartado.
 export async function getMe() {
   const resposta = await fetch(`${API_BASE}/me`, { headers: cabecalhos() });
-  if (!resposta.ok) {
+  if (resposta.status === 401) {
     throw new Error("Sessão inválida");
+  }
+  if (!resposta.ok) {
+    throw new Error(`Erro ${resposta.status}`);
   }
   return resposta.json();
 }

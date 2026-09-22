@@ -35,12 +35,26 @@ export default function App() {
   // login aparece na primeira pintura, sem piscar um "Carregando…".
   const [validandoToken, setValidandoToken] = useState(Boolean(getToken()));
   const [abaAtiva, setAbaAtiva] = useState("lancamentos");
+  // Só existe quando getMe falha por um motivo que NÃO é sessão inválida —
+  // rede fora do ar, backend inacessível etc. Nesses casos o token continua
+  // guardado: o usuário não pode ser deslogado só porque o backend estava
+  // fora do ar por um instante.
+  const [erroDeConexao, setErroDeConexao] = useState(false);
 
   useEffect(() => {
     if (!getToken()) return;
     getMe()
       .then(setUsuario)
-      .catch(() => limparToken())
+      .catch((erro) => {
+        // Só a "Sessão inválida" (401 real, vindo de handleResponse/getMe)
+        // derruba a sessão. Qualquer outra falha — rede, backend fora do
+        // ar — é um erro de conexão, e não mexe no token guardado.
+        if (erro.message === "Sessão inválida") {
+          limparToken();
+        } else {
+          setErroDeConexao(true);
+        }
+      })
       .finally(() => setValidandoToken(false));
   }, []);
 
@@ -54,6 +68,10 @@ export default function App() {
 
   if (validandoToken) {
     return <p className="tela-login">Carregando…</p>;
+  }
+
+  if (erroDeConexao) {
+    return <p className="tela-login">Não foi possível conectar ao servidor. Tente novamente mais tarde.</p>;
   }
 
   if (!usuario) {

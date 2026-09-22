@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Literal, Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ContaOut(BaseModel):
@@ -175,5 +175,5 @@ class UsuarioOut(BaseModel):
 class UsuarioCreate(BaseModel):
     email: str
     nome: str
-    senha: str
+    senha: str = Field(min_length=6)
     papel: Literal["admin", "comum"]
