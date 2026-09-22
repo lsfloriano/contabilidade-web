@@ -1,4 +1,5 @@
-from app.models import ContaContabil, Natureza, Grupo, TipoConta
+from app.auth import hash_senha
+from app.models import ContaContabil, Natureza, Grupo, Papel, TipoConta, Usuario
 
 PLANO_DE_CONTAS_PADRAO = [
     # Ativo Circulante
@@ -36,4 +37,27 @@ def seed_plano_de_contas(db):
         return
     for conta in PLANO_DE_CONTAS_PADRAO:
         db.add(ContaContabil(**conta))
+    db.commit()
+
+
+# Três contas fixas, semeadas como o plano de contas: não existe cadastro
+# público neste app. A senha em claro vive só aqui, para o seed hashear;
+# o banco guarda apenas o hash.
+USUARIOS_PADRAO = [
+    {"email": "admin@contabilidade.com", "nome": "Administrador", "senha": "admin123", "papel": Papel.admin},
+    {"email": "teste1@contabilidade.com", "nome": "Usuário Teste 1", "senha": "teste123", "papel": Papel.comum},
+    {"email": "teste2@contabilidade.com", "nome": "Usuário Teste 2", "senha": "teste123", "papel": Papel.comum},
+]
+
+
+def seed_usuarios(db):
+    if db.query(Usuario).count() > 0:
+        return
+    for usuario in USUARIOS_PADRAO:
+        db.add(Usuario(
+            email=usuario["email"],
+            nome=usuario["nome"],
+            senha_hash=hash_senha(usuario["senha"]),
+            papel=usuario["papel"],
+        ))
     db.commit()

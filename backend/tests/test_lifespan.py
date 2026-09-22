@@ -2,7 +2,7 @@ import asyncio
 
 from app.db import get_engine, get_sessionmaker
 from app.main import app, lifespan
-from app.models import ContaContabil
+from app.models import ContaContabil, Usuario
 
 
 def test_lifespan_inicializa_e_semeia_banco(tmp_path, monkeypatch):
@@ -22,5 +22,6 @@ def test_lifespan_inicializa_e_semeia_banco(tmp_path, monkeypatch):
     db = test_sessionmaker()
     try:
         assert db.query(ContaContabil).count() == 20
+        assert db.query(Usuario).count() == 3
     finally:
         db.close()

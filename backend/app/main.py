@@ -4,8 +4,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.db import engine, init_db, SessionLocal
-from app.seed import seed_plano_de_contas
-from app.routers import contas, lancamentos, relatorios
+from app.seed import seed_plano_de_contas, seed_usuarios
+from app.routers import auth, contas, lancamentos, relatorios, usuarios
 
 
 @asynccontextmanager
@@ -14,6 +14,7 @@ async def lifespan(app: FastAPI):
     db = SessionLocal()
     try:
         seed_plano_de_contas(db)
+        seed_usuarios(db)
     finally:
         db.close()
     yield
@@ -34,6 +35,8 @@ def health():
     return {"status": "ok"}
 
 
+app.include_router(auth.router)
 app.include_router(contas.router)
 app.include_router(lancamentos.router)
 app.include_router(relatorios.router)
+app.include_router(usuarios.router)
