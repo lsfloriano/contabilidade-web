@@ -4,6 +4,20 @@ Aplicação de portfólio que replica o ciclo contábil básico (lançamento →
 balancete → Balanço Patrimonial e DRE → Análise por indicadores) com
 FastAPI + pandas no backend e React no frontend.
 
+## Telas
+
+| Login | Lançamentos | Balancete |
+|---|---|---|
+| ![Login](docs/screenshots/01-login.jpg) | ![Lançamentos](docs/screenshots/02-lancamentos.jpg) | ![Balancete](docs/screenshots/03-balancete.jpg) |
+
+| Balanço Patrimonial | DRE | DFC |
+|---|---|---|
+| ![Balanço Patrimonial](docs/screenshots/04-balanco-patrimonial.jpg) | ![DRE](docs/screenshots/05-dre.jpg) | ![DFC](docs/screenshots/06-dfc.jpg) |
+
+| Análise por indicadores | Comparação entre períodos | Usuários (admin) |
+|---|---|---|
+| ![Análise](docs/screenshots/07-analise.jpg) | ![Comparação](docs/screenshots/08-comparacao.jpg) | ![Usuários](docs/screenshots/09-usuarios.jpg) |
+
 ## Rodando o backend
 
     cd backend
