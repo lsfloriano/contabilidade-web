@@ -14,6 +14,11 @@ FastAPI + pandas no backend e React no frontend.
 
 A API sobe em http://localhost:8000. Os testes: `pytest -v`.
 
+**Importante para deploy real:** a chave usada para assinar os tokens de
+login (`JWT_SECRET`, em `app/auth.py`) tem um valor padrão fixo, adequado
+só para rodar localmente. Qualquer deploy fora da máquina de
+desenvolvimento deve sobrescrevê-la com uma variável de ambiente própria.
+
 ## Rodando o frontend
 
     cd frontend
@@ -22,9 +27,25 @@ A API sobe em http://localhost:8000. Os testes: `pytest -v`.
 
 O app sobe em http://localhost:5173.
 
+## Login
+
+O app exige login. Três contas são semeadas automaticamente:
+
+| E-mail                    | Senha    | Papel  |
+|---------------------------|----------|--------|
+| admin@contabilidade.com   | admin123 | admin  |
+| teste1@contabilidade.com  | teste123 | comum  |
+| teste2@contabilidade.com  | teste123 | comum  |
+
+Essas mesmas credenciais aparecem na própria tela de login. Só a conta
+admin vê a aba **Usuários** (criar novas contas e trocar papéis).
+
 ## Checklist de verificação manual (end-to-end)
 
 - [ ] Backend e frontend rodando simultaneamente
+- [ ] Fazer login com uma conta de teste (comum) e confirmar que a aba
+      Usuários não aparece; sair e entrar como admin e confirmar que
+      aparece
 - [ ] Aba Lançamentos: dropdowns de conta populados
 - [ ] Criar um lançamento manual (ex: débito Caixa, crédito Capital
       Social) e ver aparecer na tabela
