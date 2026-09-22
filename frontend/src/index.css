@@ -457,6 +457,52 @@ input[type="file"] {
   width: 40%;
 }
 
+/* ---- login ---- */
+
+/* Tela de login: ocupa a viewport inteira, sem fio nem caixa ao redor do
+   formulário — um cartão de login quebraria a regra do resto do app ("fio,
+   não caixa"; nenhuma tabela ou formulário vive dentro de uma caixa em
+   nenhuma outra página). Título e formulário centralizados; a largura do
+   formulário é contida para não esticar numa tela larga. */
+.tela-login {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+/* Reaproveita a grade de .form-lancamento, só com uma coluna e largura
+   menor: o formulário de login tem dois campos empilhados, não três lado a
+   lado como o de lançar. */
+.tela-login .form-lancamento {
+  width: 100%;
+  max-width: 360px;
+  grid-template-columns: 1fr;
+}
+
+/* Cabeçalho de identidade: nome de quem está logado à esquerda, "Sair" à
+   direita, na mesma largura e alinhamento da faixa de abas. Sem fio próprio
+   — o fio de .tabs, logo abaixo, já separa o cabeçalho do conteúdo. */
+.cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 948px;
+  margin: 0 auto;
+  padding: 16px 24px 0;
+  box-sizing: border-box;
+}
+
+.cabecalho-usuario {
+  font-size: 13px;
+  color: var(--tinta-fraca);
+}
+
 /* ---- telas estreitas ---- */
 
 @media (max-width: 720px) {
