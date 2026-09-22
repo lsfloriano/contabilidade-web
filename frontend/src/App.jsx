@@ -7,9 +7,10 @@ import DRE from "./pages/DRE";
 import Dfc from "./pages/Dfc";
 import Analise from "./pages/Analise";
 import Comparacao from "./pages/Comparacao";
+import Usuarios from "./pages/Usuarios";
 import { getMe, getToken, limparToken } from "./api";
 
-const ABAS = {
+const ABAS_BASE = {
   lancamentos: { rotulo: "Lançamentos", componente: Lancamentos },
   balancete: { rotulo: "Balancete", componente: Balancete },
   bp: { rotulo: "Balanço Patrimonial", componente: BalancoPatrimonial },
@@ -18,6 +19,15 @@ const ABAS = {
   analise: { rotulo: "Análise", componente: Analise },
   comparacao: { rotulo: "Comparação", componente: Comparacao },
 };
+
+// "Usuários" é a última aba e só entra no dicionário para admin. Esconder a
+// aba é conveniência, não segurança: quem forçar a chamada ainda leva 403 do
+// backend.
+function abasDe(usuario) {
+  return usuario.papel === "admin"
+    ? { ...ABAS_BASE, usuarios: { rotulo: "Usuários", componente: Usuarios } }
+    : ABAS_BASE;
+}
 
 export default function App() {
   const [usuario, setUsuario] = useState(null);
@@ -50,7 +60,8 @@ export default function App() {
     return <Login aoEntrar={setUsuario} />;
   }
 
-  const Componente = ABAS[abaAtiva].componente;
+  const abas = abasDe(usuario);
+  const Componente = abas[abaAtiva].componente;
 
   return (
     <div className="app">
@@ -61,7 +72,7 @@ export default function App() {
         </button>
       </header>
       <nav className="tabs">
-        {Object.entries(ABAS).map(([chave, { rotulo }]) => (
+        {Object.entries(abas).map(([chave, { rotulo }]) => (
           <button
             key={chave}
             className={chave === abaAtiva ? "tab tab-ativa" : "tab"}
