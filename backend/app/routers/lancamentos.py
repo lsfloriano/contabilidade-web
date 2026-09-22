@@ -4,8 +4,9 @@ import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 
+from app.auth import usuario_atual
 from app.db import get_db
-from app.models import Lancamento
+from app.models import Lancamento, Usuario
 from app.schemas import (
     LancamentoCreate,
     LancamentoEstornoCreate,
@@ -19,7 +20,11 @@ router = APIRouter()
 
 
 @router.post("/lancamentos", response_model=LancamentoOut, status_code=201)
-def criar_lancamento(payload: LancamentoCreate, db: Session = Depends(get_db)):
+def criar_lancamento(
+    payload: LancamentoCreate,
+    db: Session = Depends(get_db),
+    _usuario: Usuario = Depends(usuario_atual),
+):
     try:
         validar_lancamento(db, payload.conta_debito, payload.conta_credito, payload.valor)
     except LancamentoInvalido as exc:
@@ -43,6 +48,7 @@ def estornar_lancamento(
     lancamento_id: int,
     payload: LancamentoEstornoCreate,
     db: Session = Depends(get_db),
+    _usuario: Usuario = Depends(usuario_atual),
 ):
     original = db.query(Lancamento).filter_by(id=lancamento_id).first()
     if original is None:
@@ -75,12 +81,19 @@ def estornar_lancamento(
 
 
 @router.get("/lancamentos", response_model=list[LancamentoOut])
-def listar_lancamentos(db: Session = Depends(get_db)):
+def listar_lancamentos(
+    db: Session = Depends(get_db),
+    _usuario: Usuario = Depends(usuario_atual),
+):
     return db.query(Lancamento).order_by(Lancamento.data).all()
 
 
 @router.post("/lancamentos/upload", response_model=UploadResultado)
-async def upload_lancamentos(db: Session = Depends(get_db), arquivo: UploadFile = File(...)):
+async def upload_lancamentos(
+    db: Session = Depends(get_db),
+    arquivo: UploadFile = File(...),
+    _usuario: Usuario = Depends(usuario_atual),
+):
     conteudo = await arquivo.read()
 
     try:
