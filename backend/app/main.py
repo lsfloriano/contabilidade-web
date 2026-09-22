@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -22,9 +23,17 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Contabilidade Web", lifespan=lifespan)
 
+# FRONTEND_ORIGINS: lista separada por vírgula (ex: deploy no Vercel).
+# Sem a variável, mantém só o dev local.
+_origens_extras = [
+    origem.strip()
+    for origem in os.environ.get("FRONTEND_ORIGINS", "").split(",")
+    if origem.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173", *_origens_extras],
     allow_methods=["*"],
     allow_headers=["*"],
 )
