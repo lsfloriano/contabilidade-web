@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -138,3 +138,42 @@ class FamiliaIndicadores(BaseModel):
 
 class AnaliseReport(BaseModel):
     familias: list[FamiliaIndicadores]
+
+
+class LoginRequest(BaseModel):
+    email: str
+    senha: str
+
+
+class LoginResponse(BaseModel):
+    token: str
+    nome: str
+    papel: str
+
+
+# GET /me devolve só o trio que o frontend usa; o id fica de fora de
+# propósito, é detalhe interno sem uso na tela.
+class MeOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    email: str
+    nome: str
+    papel: str
+
+
+class UsuarioOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    email: str
+    nome: str
+    papel: str
+
+
+# `papel` é Literal e não str: papel inválido tem de virar 422 na porta de
+# entrada, não um registro estragado no banco.
+class UsuarioCreate(BaseModel):
+    email: str
+    nome: str
+    senha: str
+    papel: Literal["admin", "comum"]

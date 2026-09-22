@@ -26,6 +26,11 @@ class TipoConta(str, enum.Enum):
     resultado = "resultado"
 
 
+class Papel(str, enum.Enum):
+    admin = "admin"
+    comum = "comum"
+
+
 class ContaContabil(Base):
     __tablename__ = "plano_de_contas"
 
@@ -53,3 +58,13 @@ class Lancamento(Base):
 
     debito = relationship("ContaContabil", foreign_keys=[conta_debito])
     credito = relationship("ContaContabil", foreign_keys=[conta_credito])
+
+
+class Usuario(Base):
+    __tablename__ = "usuarios"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    email = Column(String, unique=True, nullable=False)
+    nome = Column(String, nullable=False)
+    senha_hash = Column(String, nullable=False)
+    papel = Column(Enum(Papel), nullable=False)
